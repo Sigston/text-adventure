@@ -1,0 +1,35 @@
+return {
+    note = {
+        kind = "item",
+        name = "Note",
+        desc = "A crumpled note: 'DON'T TRUST THE DOOR.'",
+        aliases = { "note", "paper" },
+        portable = true,
+        icon = "note",
+    },
+    brass_key = {
+        kind = "item",
+        name = "Brass Key",
+        desc = "A worn brass key.",
+        aliases = { "key", "brass key" },
+        portable = true,
+        icon = "key",
+    },
+    inv = {
+        kind = "item",
+        name = "Inventory",
+        desc = "Your pockets, such as they are.",
+        isContainer = true,
+    },
+    chest_cell = {
+        kind = "item",
+        name = "Chest",
+        desc = "A battered metal chest.",
+        aliases = { "chest", "box" },
+        isContainer = true,
+        openable = true,
+        lockable = true,
+        portable = false,
+        icon = "chest",
+    },
+}

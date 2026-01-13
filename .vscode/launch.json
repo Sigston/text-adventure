@@ -1,0 +1,42 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "LÖVE: Debug",
+      "type": "lua-local",
+      "request": "launch",
+      "program": {
+        "command": "love"
+      },
+      "cwd": "${workspaceFolder}",
+      "args": [
+        ".",
+        "debug"
+      ],
+      "scriptRoots": [
+        "."
+      ],
+      "scriptFiles": [
+        "**/*.lua"
+      ]
+    },
+    {
+      "name": "LÖVE: Release",
+      "type": "lua-local",
+      "request": "launch",
+      "program": {
+        "command": "love"
+      },
+      "cwd": "${workspaceFolder}",
+      "args": [
+        "."
+      ],
+      "scriptRoots": [
+        "."
+      ],
+      "scriptFiles": [
+        "**/*.lua"
+      ]
+    }
+  ]
+}
