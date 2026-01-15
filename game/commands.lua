@@ -93,7 +93,7 @@ local function verbGo(obj, world, state)
     if obj == "" then return { lines = { "Go where?" }, quit = false } end
     local dir = DIR_ALIASES[obj]
     if dir == nil then return { lines = { "I don't recognise that direction" }, quit = false } end
-    local roomDest = world.rooms[state.roomID].exits[dir]
+    local roomDest = world.rooms[state.roomID].exits[dir].to
     if roomDest == nil then return { lines = { "There is no exit to the " .. dir .. "." }, quit = false} end
     
     -- Changes to state - this moves the player.

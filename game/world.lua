@@ -13,13 +13,16 @@ function M.new()
     local world = { entities = {} }
     mergeInto(world.entities, require("game.content.rooms"), "rooms")
     mergeInto(world.entities, require("game.content.items"), "items")
+    mergeInto(world.entities, require("game.content.doors"), "doors")
     world.rooms = {}
     world.items = {}
+    world.doors = {}
     world.mapdata = {}
 
     for id, ent in pairs(world.entities) do
         if ent.kind == "room" then world.rooms[id] = ent
-        elseif ent.kind == "item" then world.items[id] = ent end
+        elseif ent.kind == "item" then world.items[id] = ent 
+        elseif ent.kind == "door" then world.doors[id] = ent end
     end
 
     -- For any string, returns the key of the first item found with that alias 
@@ -57,8 +60,8 @@ function M.new()
 
         for a, r in pairs(self.rooms) do
             for _, b in pairs(r.exits) do
-                if self.rooms[b] then
-                    local u, v = a, b
+                if self.rooms[b.to] then
+                    local u, v = a, b.to
                     if u > v then u, v = v, u end
                     local key = u .. "|" .. v
                     if not seenEdge[key] then
