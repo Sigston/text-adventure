@@ -1,10 +1,18 @@
+-- Rooms.
+--   exits = {
+--     south = { to = "room_id" },
+--     north = { to = "room_id", door = "door_id" },
+--   }
+
 return {
     cell = {
         kind = "room",
         name = "Holding Cell",
         desc = "Cold concrete. A door with a small window. Your wrists ache.",
         pos = { x = 0, y = 0 },
-        exits = { north = "corridor_south" }
+        exits = {
+            north = { to = "corridor_south", door = "cell_door" },
+        },
     },
 
     corridor_south = {
@@ -12,7 +20,12 @@ return {
         name = "South Corridor",
         desc = "A dim corridor. The air smells of bleach.",
         pos = { x = 0, y = 1 },
-        exits = { south = "cell", north = "corridor_mid", west = "laundry", east = "storage" }
+        exits = {
+            south = { to = "cell", door = "cell_door" },
+            north = { to = "corridor_mid" },
+            west  = { to = "laundry" },
+            east  = { to = "storage" },
+        },
     },
 
     corridor_mid = {
@@ -20,7 +33,11 @@ return {
         name = "Mid Corridor",
         desc = "Fluorescent lights buzz overhead.",
         pos = { x = 0, y = 2 },
-        exits = { south = "corridor_south", north = "corridor_north", east = "security" }
+        exits = {
+            south = { to = "corridor_south" },
+            north = { to = "corridor_north" },
+            east  = { to = "security", door = "security_door" },
+        },
     },
 
     corridor_north = {
@@ -28,7 +45,11 @@ return {
         name = "North Corridor",
         desc = "The corridor widens near a stairwell.",
         pos = { x = 0, y = 3 },
-        exits = { south = "corridor_mid", north = "stairwell", west = "kitchen" }
+        exits = {
+            south = { to = "corridor_mid" },
+            north = { to = "stairwell", door = "fire_door" },
+            west  = { to = "kitchen", door = "kitchen_door" },
+        },
     },
 
     stairwell = {
@@ -36,7 +57,10 @@ return {
         name = "Stairwell",
         desc = "Concrete steps up and down. A heavy fire door rattles in a draft.",
         pos = { x = 0, y = 4 },
-        exits = { south = "corridor_north", north = "lobby" }
+        exits = {
+            south = { to = "corridor_north", door = "fire_door" },
+            north = { to = "lobby" },
+        },
     },
 
     lobby = {
@@ -44,7 +68,11 @@ return {
         name = "Lobby",
         desc = "A reception desk. The outside world is *somewhere* beyond the glass.",
         pos = { x = 0, y = 5 },
-        exits = { south = "stairwell", north = "courtyard", east = "office" }
+        exits = {
+            south = { to = "stairwell" },
+            north = { to = "courtyard" },
+            east  = { to = "office" },
+        },
     },
 
     courtyard = {
@@ -52,7 +80,10 @@ return {
         name = "Courtyard",
         desc = "Open air. Fences. Floodlights. Freedom is visible and still not yours.",
         pos = { x = 0, y = 6 },
-        exits = { south = "lobby", north = "gate" }
+        exits = {
+            south = { to = "lobby" },
+            north = { to = "gate" },
+        },
     },
 
     gate = {
@@ -60,7 +91,9 @@ return {
         name = "Outer Gate",
         desc = "A tall gate with an electronic lock. The kind that hates you personally.",
         pos = { x = 0, y = 7 },
-        exits = { south = "courtyard" }
+        exits = {
+            south = { to = "courtyard" },
+        },
     },
 
     -- West branch
@@ -69,7 +102,10 @@ return {
         name = "Laundry Room",
         desc = "Industrial washers. A drain in the floor. A humming extractor fan.",
         pos = { x = -1, y = 1 },
-        exits = { east = "corridor_south", north = "workshop" }
+        exits = {
+            east  = { to = "corridor_south" },
+            north = { to = "workshop" },
+        },
     },
 
     workshop = {
@@ -77,7 +113,9 @@ return {
         name = "Maintenance Workshop",
         desc = "Tools. Parts. A locked cabinet with a cheap padlock.",
         pos = { x = -1, y = 2 },
-        exits = { south = "laundry" }
+        exits = {
+            south = { to = "laundry" },
+        },
     },
 
     kitchen = {
@@ -85,7 +123,10 @@ return {
         name = "Kitchen",
         desc = "A clean kitchen. There is a door to the east.",
         pos = { x = -1, y = 3 },
-        exits = { east = "corridor_north", north = "pantry" }
+        exits = {
+            east  = { to = "corridor_north", door = "kitchen_door" },
+            north = { to = "pantry" },
+        },
     },
 
     pantry = {
@@ -93,7 +134,9 @@ return {
         name = "Pantry",
         desc = "Shelves of tins. A faint smell of vinegar. Something is hidden here.",
         pos = { x = -1, y = 4 },
-        exits = { south = "kitchen" }
+        exits = {
+            south = { to = "kitchen" },
+        },
     },
 
     -- East branch
@@ -102,7 +145,10 @@ return {
         name = "Storage",
         desc = "Crates and shrink-wrapped boxes. Labels peeled off.",
         pos = { x = 1, y = 1 },
-        exits = { west = "corridor_south", north = "generator" }
+        exits = {
+            west  = { to = "corridor_south" },
+            north = { to = "generator" },
+        },
     },
 
     generator = {
@@ -110,7 +156,9 @@ return {
         name = "Generator Room",
         desc = "A generator thumps steadily. Cables snake along the wall.",
         pos = { x = 1, y = 2 },
-        exits = { south = "storage" }
+        exits = {
+            south = { to = "storage" },
+        },
     },
 
     security = {
@@ -118,7 +166,10 @@ return {
         name = "Security Office",
         desc = "Monitors. A swivel chair. A keypad panel by the door.",
         pos = { x = 1, y = 3 },
-        exits = { west = "corridor_mid", north = "armory" }
+        exits = {
+            west  = { to = "corridor_mid", door = "security_door" },
+            north = { to = "armory", door = "armory_door" },
+        },
     },
 
     armory = {
@@ -126,7 +177,9 @@ return {
         name = "Locked Cabinet Room",
         desc = "A locked cabinet and a notice board full of stale warnings.",
         pos = { x = 1, y = 4 },
-        exits = { south = "security" }
+        exits = {
+            south = { to = "security", door = "armory_door" },
+        },
     },
 
     office = {
@@ -134,6 +187,8 @@ return {
         name = "Office",
         desc = "Paperwork. Keys. The smell of coffee that died hours ago.",
         pos = { x = 1, y = 5 },
-        exits = { west = "lobby" }
+        exits = {
+            west = { to = "lobby" },
+        },
     },
 }

@@ -5,6 +5,9 @@
       "name": "LÖVE: Debug",
       "type": "lua-local",
       "request": "launch",
+      "env": {
+        "PATH": "${env:PATH};C:\\Love"
+      },
       "program": {
         "command": "love"
       },
