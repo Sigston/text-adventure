@@ -15,7 +15,7 @@ function M.new(world, startRoomID)
     state.parents = {
         inv = "player",
         chest_cell = "cell",
-        brass_key = "inv",
+        brass_key = "chest_cell",
         note = "cell"
     }
     state.open = {}
@@ -37,6 +37,19 @@ function M.new(world, startRoomID)
         local entityParent = state.parents[entityID]
         if entityParent == containerID then return true
         else return false end
+    end
+
+    -- Is the passed argument currently visible?
+    function state:isVisible(entityID)
+        local roomItems = state:visibleItems()
+        for i = 1, #roomItems do if roomItems[i] == entityID then return true end end
+        return false
+    end
+
+    -- Returns all currently visible items. Containers should do their own reporting if open.
+    function state:visibleItems()
+        return self:children(state.roomID)
+        -- Add some stuff here if we implement some items not being visible.
     end
 
     function state:move(entityID, newContainerID)

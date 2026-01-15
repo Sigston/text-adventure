@@ -22,6 +22,18 @@ function M.new()
         elseif ent.kind == "item" then world.items[id] = ent end
     end
 
+    -- For any string, returns the key of the first item found with that alias 
+    function world:resolveAlias(obj)
+        for index, value in pairs(world.entities) do
+            local aliases = value.aliases
+            if aliases then 
+                for i = 1, #aliases do
+                    if obj == aliases[i] then return index end
+                end
+            end
+        end
+    end
+
     function world:generateMapData(state)
         state = state or {}
         local nodes, edges = {}, {}
