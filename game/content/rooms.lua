@@ -9,6 +9,8 @@ return {
         kind = "room",
         name = "Holding Cell",
         desc = "Cold concrete. A door with a small window. Your wrists ache.",
+        firstTimeDesc = "You wake in a small concrete cell. You don't know why you've ended up here. " .. 
+        "You imagine it might be a conceit of some kind. You decide not to worry too much about this.",
         pos = { x = 0, y = 0 },
         exits = {
             north = { to = "corridor_south", door = "cell_door" },

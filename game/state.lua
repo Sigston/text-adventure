@@ -5,7 +5,7 @@ function M.new(world, startRoomID)
     local state = {
         roomID = startRoomID,
         winRoomID = "gate",
-        visited = { [startRoomID] = true },
+        visited = { },
         revealMap = false,
         invID = "inv",
         flags = { won = false },

@@ -2,7 +2,6 @@ local helper = require("game.verbs.verbhelper")
 
 local function doGo(key, state)
     state.roomID = key
-    state.visited[key] = true
 end
 
 local function resolve(world, state)
@@ -27,6 +26,7 @@ local function act(entities, object, world, state, verbs)
             for i = 1, #lookLines do
                 table.insert(lines, lookLines[i])
             end
+            state.visited[roomExits[dir].to] = true
         end
     else
         doGo(roomExits[dir].to, state)
@@ -35,6 +35,7 @@ local function act(entities, object, world, state, verbs)
         for i = 1, #lookLines do
             table.insert(lines, lookLines[i])
         end
+        state.visited[roomExits[dir].to] = true
     end
     return lines
 end

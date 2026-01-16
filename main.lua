@@ -38,6 +38,7 @@ function love.load()
     world:generateMapData(state)
     local result = Commands.handle("l", world, state)
     for _, line in ipairs(result.lines) do logUI:add(line) end
+    state.visited[state.roomID] = true
 end
 
 function love.update(dt)

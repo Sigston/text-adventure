@@ -57,6 +57,14 @@ function M.new()
         return out
     end
 
+    function world:getDesc(roomID, state)
+        local room = world:rooms()[roomID]
+        if room then
+            if state.visited[roomID] then return room.desc
+            else return room.firstTimeDesc end
+        else return end
+    end
+
     function world:generateMapData(state)
         state = state or {}
         local nodes, edges = {}, {}
