@@ -1,7 +1,12 @@
-local function act()
-end
-
 local function report()
+    local lines = {
+        "Possible commands:",
+        "   quit",
+        "   go",
+        "   look",
+        "   help"
+    }
+    return lines, false
 end
 
-return { act = act, report = report }
+return { report = report }

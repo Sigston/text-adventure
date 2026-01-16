@@ -111,15 +111,6 @@ local function printEntities(roomKey, world, state)
     return "You see" .. aLister(entities)
 end
 
-local function listItems(keys, world)
-    local out = { }
-    for i = 1, #keys do
-        table.insert(out, world:items()[keys[i]].name)
-    end
-    table.sort(out)
-    return out
-end
-
 local function goDir(dir, roomKey, world, state)
     local lines = { }
     -- Changes to state - this moves the player.
@@ -150,28 +141,6 @@ local function verbGo(obj, world, state)
         else lines = goDir(dir, roomExits[dir].to, world, state) end
     else lines = goDir(dir, roomExits[dir].to, world, state) end
     return { lines = lines, quit = false }
-end
-
--- Resolves HELP - prints the help text.
-local function verbHelp(world, state)
-    return { 
-        lines = {
-            "Possible commands:",
-            "   quit",
-            "   go",
-            "   look",
-            "   help"
-        }, 
-        quit = false
-    }
-end
-
--- Resolves INVENTORY - calls printItemList of the children of the inventory entity.
-local function verbInv(world, state)
-    return {
-        lines = listItems(state:children(state.invID), world),
-        quit = false
-    }
 end
 
 -- Resolves TAKE - deals with aliases, checks if visible, moves (or otherwise) and reports.
@@ -431,10 +400,6 @@ function M.handle(line, world, state)
         out = verbGo(ws[2] or "", world, state)
     elseif DIR_ALIASES[verb] then
         out = verbGo(ws[1], world, state)
-    elseif verb == "help" then
-        out = verbHelp(world, state)
-    elseif verb == "inventory" then
-        out = verbInv(world, state)
     elseif verb == "take" then
         out = verbTake(ws[2] or "", world, state)
     elseif verb == "drop" then
