@@ -287,7 +287,12 @@ local function verbOpen(obj, world, state)
                 if state.locked[key] then table.insert(lines, "The " .. entity.name:lower() .. " is locked.")
                 else
                     state.open[key] = true
-                    table.insert(lines, "You open the " .. entity.name:lower() .. ".")
+                    local response = "You open the " .. entity.name:lower() .. "."
+                    local contents = state:children(key)
+                    if #contents > 0 then
+                        response = response .. " Inside you see" .. aLister(world:getNames(contents))
+                    end
+                    table.insert(lines, response)
                 end
             end
         else table.insert(lines, "You can't open that.") end
