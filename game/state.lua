@@ -15,11 +15,20 @@ function M.new(world, startRoomID)
     state.parents = {
         inv = "player",
         chest_cell = "cell",
-        brass_key = "chest_cell",
-        note = "cell"
+        brass_key = "bag",
+        note = "inv",
+        bag = "cell"
     }
-    state.open = {}
-    state.locked = {}
+    state.open = {
+        chest_cell = false,
+        bag = false,
+        cell_door = false,
+    }
+    state.locked = {
+        chest_cell = true,
+        bag = false,
+        cell_door = true,
+    }
 
     function state:children(containerID)
         local children = {}

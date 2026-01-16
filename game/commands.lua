@@ -14,7 +14,9 @@ local VERB_ALIASES = {
     inventory =  "inventory", i = "inventory",
     t = "take", take = "take",
     d = "drop", drop = "drop",
-    x = "examine", examine = "examine"
+    x = "examine", examine = "examine",
+    o = "open", open = "open",
+    close = "close",
 }
 
 local function trim(s)
@@ -61,6 +63,11 @@ local function xEntities(roomKey, world, state)
     -- And then doors
     for key, value in pairs(world.entities[roomKey].exits) do
         if value.door then table.insert(out, value.door) end
+    end
+    -- And the inventory
+    local inventory = state:invKeys()
+    for i = 1, #inventory do
+        table.insert(out, inventory[i])
     end
     return out
 end
@@ -127,25 +134,35 @@ local function verbLook(world, state)
     return { lines = lines, quit = false }
 end
 
--- Handles GO - resolves the obj, moves the player and reports back. Calls verbLook() as part of the report.
-local function verbGo(obj, world, state)
-    -- Resolve obj to an appropriate direction
-    if obj == "" then return { lines = { "Go where?" }, quit = false } end
-    local dir = DIR_ALIASES[obj]
-    if dir == nil then return { lines = { "I don't recognise that direction" }, quit = false } end
-    local roomDest = world:rooms()[state.roomID].exits[dir]
-    if roomDest == nil then return { lines = { "There is no exit to the " .. dir .. "." }, quit = false} end
-    
+local function goDir(dir, roomKey, world, state)
+    local lines = { }
     -- Changes to state - this moves the player.
-    state.roomID = roomDest.to
-    state.visited[roomDest.to] = true
+    state.roomID = roomKey
+    state.visited[roomKey] = true
 
     -- Report results
-    local lines = {"You go " .. dir .. "."}
+    table.insert(lines, "You go " .. dir .. ".")
     local lookLines = verbLook(world, state).lines
     for i = 1, #lookLines do
         table.insert(lines, lookLines[i])
     end
+    return lines
+end
+
+-- Handles GO - resolves the obj, moves the player and reports back. Calls verbLook() as part of the report.
+local function verbGo(obj, world, state)
+    local lines = { }
+    -- Resolve obj to an appropriate direction
+    if obj == "" then return { lines = { "Go where?" }, quit = false } end
+    local dir = DIR_ALIASES[obj]
+    if dir == nil then return { lines = { "I don't recognise that direction" }, quit = false } end
+    local roomExits = world:rooms()[state.roomID].exits
+    if roomExits[dir] == nil then return { lines = { "There is no exit to the " .. dir .. "." }, quit = false} end
+    local door = roomExits[dir].door
+    if door then
+        if state.open[door] == false then table.insert(lines, "The door to the " .. dir .. " is closed.") 
+        else lines = goDir(dir, roomExits[dir].to, world, state) end
+    else lines = goDir(dir, roomExits[dir].to, world, state) end
     return { lines = lines, quit = false }
 end
 
@@ -185,16 +202,9 @@ local function verbTake(obj, world, state)
             local result = state:move(key, state.invID)
             if result == "success" then
                 table.insert(lines, "You take the " .. world:items()[key].name:lower() .. ".")
-            else
-                table.insert(lines, "Something went wrong.")
-            end
-        else
-            table.insert(lines, "You can't take this.")
-        end
-    else
-        table.insert(lines, "There is no " .. obj .. " here.")
-    end
-
+            else table.insert(lines, "Something went wrong.") end
+        else table.insert(lines, "You can't take this.") end
+    else table.insert(lines, "There is no " .. obj .. " here.") end
     return {
         lines = lines,
         quit = false
@@ -210,12 +220,8 @@ local function verbDrop(obj, world, state)
         local result = state:move(worldKey, state.roomID)
         if result == "success" then
             table.insert(lines, "You drop the " .. world:items()[worldKey].name:lower() .. ".")
-        else
-            table.insert(lines, "Something went wrong.")
-        end
-    else
-        table.insert(lines, "You have no " .. obj .. " to drop.")
-    end
+        else table.insert(lines, "Something went wrong.") end
+    else table.insert(lines, "You have no " .. obj .. " to drop.") end
     return {
         lines = lines,
         quit = false
@@ -230,9 +236,76 @@ local function verbExamine(obj, world, state)
     local entities = xEntities(state.roomID, world, state)
     -- Resolve obj as an alias of any of the entities
     local key = world:resolveAlias(obj, state, entities)
-    if key then table.insert(lines, world.entities[key].desc)
+    if key then
+        local desc = world.entities[key].desc
+        if world.entities[key].isContainer then
+            if state.open[key] then
+                desc = desc .. " It is open."
+            else
+                if state.locked[key] then
+                    desc = desc .. " It is closed and locked."
+                else
+                    desc = desc .. " It is closed."
+                end
+            end
+        end
+        table.insert(lines, desc)
     else table.insert(lines, "There is no " .. obj .. " here.") end
 
+    return {
+        lines = lines,
+        quit = false
+    }
+end
+
+local function verbOpen(obj, world, state)
+    local lines = {}
+    if obj == "" then return { lines = { "Open what?" }, quit = false } end
+    -- Get list of examinable entities (not listed, as includes scenery, etc)
+    local entities = xEntities(state.roomID, world, state)
+    -- Resolve obj as an alias of any of the entities
+    local key = world:resolveAlias(obj, state, entities)
+    if key then
+        local entity = world.entities[key]
+        if entity.openable then
+            if state.open[key] then table.insert(lines, "The " .. entity.name:lower() .. " is already open.")
+            else
+                if state.locked[key] then table.insert(lines, "The " .. entity.name:lower() .. " is locked.")
+                else
+                    state.open[key] = true
+                    table.insert(lines, "You open the " .. entity.name:lower() .. ".")
+                end
+            end
+        else table.insert(lines, "You can't open that.") end
+    else table.insert(lines, "There is no " .. obj .. " here.") end
+    return {
+        lines = lines,
+        quit = false
+    }
+end
+
+local function verbClose(obj, world, state)
+    local lines = {}
+    if obj == "" then return { lines = { "Close what?" }, quit = false } end
+    -- Get list of examinable entities (not listed, as includes scenery, etc)
+    local entities = xEntities(state.roomID, world, state)
+    -- Resolve obj as an alias of any of the entities
+    local key = world:resolveAlias(obj, state, entities)
+    if key then
+        local entity = world.entities[key]
+        if entity.kind == "item" then
+            if entity.openable then
+                if state.open[key] then
+                    state.open[key] = false
+                    table.insert(lines, "You close the " .. entity.name:lower() .. ".")
+                else
+                    table.insert(lines, "The " .. entity.name:lower() .. " is already closed.")
+                end
+            else table.insert(lines, "You can't close that.") end
+        elseif entity.kind == "door" then
+            print("HI")
+        else table.insert(lines, "You can't close that.") end
+    else table.insert(lines, "There is no " .. obj .. " here.") end
     return {
         lines = lines,
         quit = false
@@ -271,6 +344,10 @@ function M.handle(line, world, state)
         out = verbDrop(ws[2] or "", world, state)
     elseif verb == "examine" then
         out = verbExamine(ws[2] or "", world, state)
+    elseif verb == "open" then
+        out = verbOpen(ws[2] or "", world, state)
+    elseif verb == "close" then
+        out = verbClose(ws[2] or "", world, state)
     else
         out.lines = { "I don't understand that."}
     end

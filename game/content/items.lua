@@ -31,10 +31,21 @@ return {
         aliases = { "chest", "box" },
         isContainer = true,
         openable = true,
-        isOpen = false,
         lockable = true,
         portable = false,
         isListed = true,
         icon = "chest",
     },
+    bag = {
+        kind = "item",
+        name = "Bag",
+        desc = "A hessian bag.",
+        aliases = { "bag", "sack" },
+        isContainer = true,
+        openable = true,
+        lockable = false,
+        portable = false,
+        isListed = true,
+        icon = "bag"
+    }
 }
