@@ -1,5 +1,7 @@
 local M = {}
 
+local Inventory = require("game.inventory")
+
 function M.new(world, startRoomID)
     startRoomID = startRoomID or "cell"
     local state = {
@@ -10,6 +12,7 @@ function M.new(world, startRoomID)
         invID = "inv",
         flags = { won = false },
         entity = {},
+        inventory = { slots = { } },
     }
 
     state.parents = {
@@ -30,6 +33,8 @@ function M.new(world, startRoomID)
         cell_door = true,
     }
 
+    Inventory.rebuild(state)
+
     function state:children(containerID)
         local children = {}
         for child, parent in pairs(state.parents) do
@@ -46,15 +51,6 @@ function M.new(world, startRoomID)
         local entityParent = state.parents[entityID]
         if entityParent == containerID then return true
         else return false end
-    end
-
-    -- returns a list of keys for items in the inventory
-    function state:invKeys()
-        local out = {}
-        for key, value in pairs(state.parents) do
-            if value == state.invID then table.insert(out, key) end
-        end
-        return out
     end
 
     -- Is the passed argument currently visible?

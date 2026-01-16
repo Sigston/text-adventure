@@ -1,11 +1,12 @@
 local helper = require("game.verbs.verbhelper")
+local Inventory = require("game.inventory")
 
 local function doDrop(key, state)
-    return state:move(key, state.roomID)
+    return Inventory.remove(state, key, state.roomID)
 end
 
 local function resolve(world, state)
-    return state:invKeys()
+    return Inventory.list(state)
 end
 
 local function act(entities, object, world, state)
@@ -13,7 +14,7 @@ local function act(entities, object, world, state)
     if object == "" then return { "Drop what?" } end
     local worldKey = world:resolveAlias(object, state, entities)
     if worldKey then
-        if doDrop(worldKey, state) then
+        if doDrop(worldKey, state) == "success" then
             table.insert(lines, "You drop the " .. object .. ".")
         else table.insert(lines, "Something went wrong.") end
     else table.insert(lines, "You have no " .. object .. " to drop.") end

@@ -1,4 +1,5 @@
 local helper = require("game.verbs.verbhelper")
+local Inventory = require("game.inventory")
 
 local function doOpen(key, state)
     state.open[key] = true
@@ -18,7 +19,7 @@ local function act(entities, object, world, state)
             if state.open[key] then table.insert(lines, "The " .. entity.name:lower() .. " is already open.")
             else
                 if state.locked[key] then
-                    local inventory = state:invKeys()
+                    local inventory = Inventory.list(state)
                     for i = 1, #inventory do
                         if world.entities[key].key == inventory[i] then state.locked[key] = false end
                     end

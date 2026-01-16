@@ -1,7 +1,8 @@
 local helper = require("game.verbs.verbhelper")
+local Inventory = require("game.inventory")
 
 local function doTake(key, state)
-    return state:move(key, state.invID)
+    return Inventory.add(state, key)
 end
 
 local function resolve(world, state)
@@ -17,19 +18,16 @@ local function resolve(world, state)
 end
 
 local function act(entities, object, world, state)
-    local response = { }
-    if object ~= "" then
-        local key = world:resolveAlias(object, state, entities)
-        if key then
-            if world.entities[key].portable then
-                local result = doTake(key, state)
-                if result == "success" then
-                    table.insert(response, "You take the " .. world:items()[key].name:lower() .. ".")
-                else table.insert(response, "Something went wrong.") end
-            else table.insert(response, "You can't take this.") end
-        else table.insert(response, "There is no " .. object .. " here.") end
-    else table.insert(response, "Take what?") end
-    return response
+    if object == "" then return { "Take what?" } end
+    local key = world:resolveAlias(object, state, entities)
+    if not key then return { "There is no " .. object .. " here."} end
+    if not world.entities[key].portable then return {"You can't take this."} end
+    
+    local result = doTake(key, state)
+    if result == "success" then return { "You take the " .. object .. "." }
+    elseif result == "already" then return { "You already have the " .. object .. "." }
+    elseif result == "full" then return { "You have no more room in your inventory." }
+    else return { "Something went wrong." } end
 end
 
 local function report(response)

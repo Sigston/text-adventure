@@ -14,6 +14,8 @@ local Inventory = require("ui.inventory")
 local Map = require("ui.map")
 local Commands = require("game.commands")
 
+local openingMessage = "***BREAKOUT***\n"
+
 local logUI
 local inputUI
 local headerUI
@@ -36,6 +38,7 @@ function love.load()
     mapUI = Map.new(layout)
 
     world:generateMapData(state)
+    logUI:add(openingMessage)
     local result = Commands.handle("l", world, state)
     for _, line in ipairs(result.lines) do logUI:add(line) end
     state.visited[state.roomID] = true

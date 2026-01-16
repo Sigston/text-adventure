@@ -1,3 +1,5 @@
+local Inventory = require("game.inventory")
+
 -- Gets entities within the supplied room which have listed=true
 local function listedEntities(roomKey, world, state)
     -- Entities we don't consider: doors, rooms
@@ -70,7 +72,7 @@ local function xEntities(roomKey, world, state)
         if value.door then table.insert(out, value.door) end
     end
     -- And the inventory
-    local inventory = state:invKeys()
+    local inventory = Inventory.list(state)
     for i = 1, #inventory do
         table.insert(out, inventory[i])
     end

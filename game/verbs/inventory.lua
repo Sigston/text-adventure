@@ -1,3 +1,5 @@
+local Inventory = require("game.inventory")
+
 local function listItems(keys, world)
     local out = { }
     for i = 1, #keys do
@@ -8,7 +10,7 @@ local function listItems(keys, world)
 end
 
 local function report(response, world, state)
-    local lines = listItems(state:children(state.invID), world)
+    local lines = listItems(Inventory.list(state), world)
     return lines, false
 end
 
