@@ -53,10 +53,36 @@ local function printExits(roomExits)
     return out
 end
 
+local function xEntities(roomKey, world, state)
+    -- Entities we don't consider: rooms
+    local out = { }
+    -- Deal with items first, these can move, so location are in state.
+    local items = state:children(roomKey)
+    for i = 1, #items do
+        if world.entities[items[i]].isListed then table.insert(out, items[i]) end
+    end
+    -- Then deal with scenery
+    for key, value in pairs(world:scenery()) do
+        if value.loc == roomKey then table.insert(out, key) end
+    end
+    -- And then doors
+    for key, value in pairs(world.entities[roomKey].exits) do
+        if value.door then table.insert(out, value.door) end
+    end
+    -- And the inventory
+    local inventory = state:invKeys()
+    for i = 1, #inventory do
+        table.insert(out, inventory[i])
+    end
+    return out
+end
+
 local helper = {
     listedEntities = listedEntities,
     printEntities = printEntities,
     printExits = printExits,
+    xEntities = xEntities,
+    aLister = aLister,
 }
 
 return helper

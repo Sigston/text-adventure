@@ -6,7 +6,7 @@ end
 
 local function resolve(world, state)
     -- You can take listed items, and anything inside listed items which are open.
-    local entities = helper.listedEntities(state.roomID, world, state)
+    local entities = helper.xEntities(state.roomID, world, state)
     for i = 1, #entities do
         if world.entities[entities[i]].isContainer == true and state.open[entities[i]] then
             local contents = state:children(entities[i])
@@ -18,15 +18,17 @@ end
 
 local function act(entities, object, world, state)
     local response = { }
-    local key = world:resolveAlias(object, state, entities)
-    if key then
-        if world.entities[key].portable then
-            local result = doTake(key, state.invID)
-            if result == "success" then
-                table.insert(response, "You take the " .. world:items()[key].name:lower() .. ".")
-            else table.insert(response, "Something went wrong.") end
-        else table.insert(response, "You can't take this.") end
-    else table.insert(response, "There is no " .. object .. " here.") end
+    if object ~= "" then
+        local key = world:resolveAlias(object, state, entities)
+        if key then
+            if world.entities[key].portable then
+                local result = doTake(key, state)
+                if result == "success" then
+                    table.insert(response, "You take the " .. world:items()[key].name:lower() .. ".")
+                else table.insert(response, "Something went wrong.") end
+            else table.insert(response, "You can't take this.") end
+        else table.insert(response, "There is no " .. object .. " here.") end
+    else table.insert(response, "Take what?") end
     return response
 end
 

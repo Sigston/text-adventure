@@ -60,4 +60,14 @@ for key, value in pairs(verbs) do
     if doVerb then value.doVerb = doVerb end
 end
 
-return verbs
+local function generateAliases(verbs)
+    local out = {}
+    for verbName, verb in pairs(verbs) do
+        for _, alias in pairs(verb.aliases) do
+            out[alias] = verbName
+        end
+    end
+    return out
+end
+
+return {verbs, generateAliases(verbs)}

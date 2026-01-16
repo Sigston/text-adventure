@@ -12,6 +12,12 @@ end
 function M.new()
     local world = { entities = {} }
     world.mapdata = {}
+    world.dirAliases = {
+        n = "north", s = "south", e = "east", w = "west",
+        u = "up", d = "down",
+        north = "north", south = "south", east = "east", west = "west",
+        up = "up", down = "down",
+    }
     mergeInto(world.entities, require("game.content.doors"), "doors")
     mergeInto(world.entities, require("game.content.items"), "items")
     mergeInto(world.entities, require("game.content.rooms"), "rooms")
