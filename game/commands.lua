@@ -284,7 +284,23 @@ local function verbOpen(obj, world, state)
         if entity.openable then
             if state.open[key] then table.insert(lines, "The " .. entity.name:lower() .. " is already open.")
             else
-                if state.locked[key] then table.insert(lines, "The " .. entity.name:lower() .. " is locked.")
+                if state.locked[key] then
+                    local inventory = state:invKeys()
+                    for i = 1, #inventory do
+                        if world.entities[key].key == inventory[i] then state.locked[key] = false end
+                    end
+                    if state.locked[key] == false then 
+                        table.insert(lines, "You unlock the " .. entity.name:lower() .. " with the " .. world.entities[world.entities[key].key].name:lower() .. ".")
+                        state.open[key] = true
+                        local response = "You open the " .. entity.name:lower() .. "."
+                        local contents = state:children(key)
+                        if #contents > 0 then
+                            response = response .. " Inside you see" .. aLister(world:getNames(contents))
+                        end
+                        table.insert(lines, response)
+                    else
+                        table.insert(lines, "The " .. entity.name:lower() .. " is locked.")
+                    end
                 else
                     state.open[key] = true
                     local response = "You open the " .. entity.name:lower() .. "."
