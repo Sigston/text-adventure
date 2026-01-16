@@ -16,7 +16,7 @@ local VERB_ALIASES = {
     d = "drop", drop = "drop",
     x = "examine", examine = "examine",
     o = "open", open = "open",
-    close = "close",
+    close = "close", unlock = "unlock", lock = "lock",
 }
 
 local function trim(s)
@@ -93,17 +93,20 @@ local function printExits(roomExits)
     return out
 end
 
+-- Returns a string of the provided names formatted.
+local function aLister(listNames)
+    if #listNames == 0 then return 
+    elseif #listNames == 1 then return " a " .. listNames[1] .. "." 
+    elseif #listNames == 2 then return " a " .. listNames[1] .. " and a " .. listNames[2] .. "."
+    else return " a " .. table.concat(listNames, ", a ", 1, #listNames - 1) .. " and a " .. listNames[#listNames] end
+end
+
 -- Prints entities within the current room which have listed=true
 local function printEntities(roomKey, world, state)
     local entityKeys = listedEntities(roomKey, world, state)
     if #entityKeys == 0 then return end
     local entities = world:getNames(entityKeys)
-    if #entities == 1 then return "You see a " .. entities[1] .. "."
-    elseif #entities == 2 then return "You see a " .. entities[1] .. " and a " .. entities[2] .. "."
-    else 
-        local phrase = table.concat(entities, ", a ", 1, #entities - 1) .. " and a " .. entities[#entities]
-        return "You see a " .. phrase .. "."
-    end
+    return "You see" .. aLister(entities)
 end
 
 local function listItems(keys, world)
@@ -193,8 +196,14 @@ local function verbTake(obj, world, state)
     local lines = { }
     if obj == "" then return { lines = { "Take what?" }, quit = false } end
     -- Create list of possibles.
-    -- Get list of entities for the room
+    -- Get list of entities for the room, including items in open containers
     local entities = listedEntities(state.roomID, world, state)
+    for i = 1, #entities do
+        if world.entities[entities[i]].isContainer == true and state.open[entities[i]] then
+            local contents = state:children(entities[i])
+            for i = 1, #contents do table.insert(entities, contents[i]) end
+        end
+    end
     -- Resolve the obj as an alias for the found group of entities
     local key = world:resolveAlias(obj, state, entities)
     if key then
@@ -238,9 +247,14 @@ local function verbExamine(obj, world, state)
     local key = world:resolveAlias(obj, state, entities)
     if key then
         local desc = world.entities[key].desc
-        if world.entities[key].isContainer then
+        if world.entities[key].isContainer or world.entities[key].kind == "door" then
             if state.open[key] then
-                desc = desc .. " It is open."
+                local contents = world:getNames(state:children(key))
+                if #contents > 0 then
+                    desc = desc .. " It is open. Inside you see" .. aLister(contents)
+                else
+                    desc = desc .. " It is open."
+                end
             else
                 if state.locked[key] then
                     desc = desc .. " It is closed and locked."
@@ -312,6 +326,62 @@ local function verbClose(obj, world, state)
     }
 end
 
+local function verbUnlock(obj, world, state)
+    local lines = {}
+    if obj == "" then return { lines = { "Unlock what?" }, quit = false } end
+    -- Get list of examinable entities (not listed, as includes scenery, etc)
+    local entities = xEntities(state.roomID, world, state)
+    -- Resolve obj as an alias of any of the entities
+    local key = world:resolveAlias(obj, state, entities)
+    if key then
+        local entity = world.entities[key]
+        if entity.lockable then
+            if state.locked[key] then
+                local inventory = state:invKeys()
+                for i = 1, #inventory do
+                    if world.entities[key].key == inventory[i] then state.locked[key] = false end
+                end
+                if state.locked[key] then table.insert(lines, "You don't have the correct key.")
+                else table.insert(lines, "You unlock the " .. entity.name:lower() .. ".") end
+            else
+                table.insert(lines, "The " .. entity.name:lower() .. " is already unlocked.")
+            end
+        else table.insert(lines, "You can't unlock that.") end
+    else table.insert(lines, "There is no " .. obj .. " here.") end
+    return {
+        lines = lines,
+        quit = false
+    }
+end
+
+local function verbLock(obj, world, state)
+    local lines = {}
+    if obj == "" then return { lines = { "Lock what?" }, quit = false } end
+    -- Get list of examinable entities (not listed, as includes scenery, etc)
+    local entities = xEntities(state.roomID, world, state)
+    -- Resolve obj as an alias of any of the entities
+    local key = world:resolveAlias(obj, state, entities)
+    if key then
+        local entity = world.entities[key]
+        if entity.lockable then
+            if state.locked[key] then
+                table.insert(lines, "The " .. entity.name:lower() .. " is already locked.")
+            else
+                local inventory = state:invKeys()
+                for i = 1, #inventory do
+                    if world.entities[key].key == inventory[i] then state.locked[key] = true end
+                end
+                if state.locked[key] then table.insert(lines, "You lock the " .. entity.name:lower() .. ".")
+                else table.insert(lines, "You don't have the right key.") end
+            end
+        else table.insert(lines, "You can't lock that.") end
+    else table.insert(lines, "There is no " .. obj .. " here.") end
+    return {
+        lines = lines,
+        quit = false
+    }
+end
+
 function M.handle(line, world, state)
     local out = { lines = {}, quit = false }
 
@@ -348,6 +418,10 @@ function M.handle(line, world, state)
         out = verbOpen(ws[2] or "", world, state)
     elseif verb == "close" then
         out = verbClose(ws[2] or "", world, state)
+    elseif verb == "unlock" then
+        out = verbUnlock(ws[2] or "", world, state)
+    elseif verb == "lock" then
+        out = verbLock(ws[2] or "", world, state)
     else
         out.lines = { "I don't understand that."}
     end

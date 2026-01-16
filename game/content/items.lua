@@ -34,6 +34,7 @@ return {
         lockable = true,
         portable = false,
         isListed = true,
+        key = "brass_key",
         icon = "chest",
     },
     bag = {
