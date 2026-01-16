@@ -39,16 +39,31 @@ function M.new(world, startRoomID)
         else return false end
     end
 
+    -- returns a list of keys for items in the inventory
+    function state:invKeys()
+        local out = {}
+        for key, value in pairs(state.parents) do
+            if value == state.invID then table.insert(out, key) end
+        end
+        return out
+    end
+
     -- Is the passed argument currently visible?
-    function state:isVisible(entityID)
-        local roomItems = state:visibleItems()
+    function state:isVisible(entityID, world)
+        local roomItems = state:visibles(world)
         for i = 1, #roomItems do if roomItems[i] == entityID then return true end end
         return false
     end
 
     -- Returns all currently visible items. Containers should do their own reporting if open.
-    function state:visibleItems()
-        return self:children(state.roomID)
+    function state:visibles(world)
+        -- Get all the items in the room
+        local out = self:children(state.roomID)
+        -- And the doors
+        for key, value in pairs(world:rooms()[state.roomID].exits) do
+            table.insert(out, value.door)
+        end
+        return out
         -- Add some stuff here if we implement some items not being visible.
     end
 

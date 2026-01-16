@@ -11,30 +11,44 @@ end
 
 function M.new()
     local world = { entities = {} }
-    mergeInto(world.entities, require("game.content.rooms"), "rooms")
-    mergeInto(world.entities, require("game.content.items"), "items")
-    mergeInto(world.entities, require("game.content.doors"), "doors")
-    world.rooms = {}
-    world.items = {}
-    world.doors = {}
     world.mapdata = {}
+    mergeInto(world.entities, require("game.content.doors"), "doors")
+    mergeInto(world.entities, require("game.content.items"), "items")
+    mergeInto(world.entities, require("game.content.rooms"), "rooms")
+    mergeInto(world.entities, require("game.content.scenery"), "scenery")
 
-    for id, ent in pairs(world.entities) do
-        if ent.kind == "room" then world.rooms[id] = ent
-        elseif ent.kind == "item" then world.items[id] = ent 
-        elseif ent.kind == "door" then world.doors[id] = ent end
+    local function entitySubset(kind)
+        local out = { }
+        for key, value in pairs(world.entities) do
+            if value.kind == kind then out[key] = value end
+        end
+        return out
     end
 
-    -- For any string, returns the key of the first item found with that alias 
-    function world:resolveAlias(obj)
-        for index, value in pairs(world.entities) do
-            local aliases = value.aliases
-            if aliases then 
-                for i = 1, #aliases do
-                    if obj == aliases[i] then return index end
-                end
+    function world:doors() return entitySubset("door") end
+    function world:items() return entitySubset("item") end
+    function world:rooms() return entitySubset("room") end
+    function world:scenery() return entitySubset("scenery") end
+
+    -- For any string, returns the key of the first visible item found with that alias 
+    function world:resolveAlias(alias, state, entities)
+        entities = entities or world.entities
+        for i = 1, #entities do
+            local entity = world.entities[entities[i]]
+            for _, value in pairs(entity.aliases) do
+                if alias == value then return entities[i] end
             end
         end
+    end
+
+    function world:getNames(keyList)
+        local out = {}
+        for key, value in pairs(world.entities) do
+            for i = 1, #keyList do
+                if keyList[i] == key then table.insert(out, value.name:lower()) end                
+            end
+        end
+        return out
     end
 
     function world:generateMapData(state)
@@ -44,7 +58,8 @@ function M.new()
         local minX, maxX = math.huge, -math.huge
         local minY, maxY = math.huge, -math.huge
 
-        for id, r in pairs(self.rooms) do
+        local rooms = self:rooms()
+        for id, r in pairs(rooms) do
             minX = math.min(minX, r.pos.x); maxX = math.max(maxX, r.pos.x)
             minY = math.min(minY, r.pos.y); maxY = math.max(maxY, r.pos.y)
             local visited
@@ -58,9 +73,9 @@ function M.new()
             table.insert(nodes, { id = id, name = r.name, x = r.pos.x, y = r.pos.y, visited = visited, current = (state.roomID == id)})
         end
 
-        for a, r in pairs(self.rooms) do
+        for a, r in pairs(rooms) do
             for _, b in pairs(r.exits) do
-                if self.rooms[b.to] then
+                if rooms[b.to] then
                     local u, v = a, b.to
                     if u > v then u, v = v, u end
                     local key = u .. "|" .. v

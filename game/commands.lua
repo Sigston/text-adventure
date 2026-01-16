@@ -29,6 +29,42 @@ local function words(s)
     return out
 end
 
+-- Gets entities within the supplied room which have listed=true
+local function listedEntities(roomKey, world, state)
+    -- Entities we don't consider: doors, rooms
+    local out = { }
+    -- Deal with items first, these can move, so location are in state.
+    local items = state:children(roomKey)
+    for i = 1, #items do
+        if world.entities[items[i]].isListed then table.insert(out, items[i]) end
+    end
+    -- Then deal with scenery
+    local scenery = { }
+    for key, value in pairs(world:scenery()) do
+        if value.loc == roomKey and value.isListed then table.insert(out, key) end
+    end
+    return out
+end
+
+local function xEntities(roomKey, world, state)
+    -- Entities we don't consider: rooms
+    local out = { }
+    -- Deal with items first, these can move, so location are in state.
+    local items = state:children(roomKey)
+    for i = 1, #items do
+        if world.entities[items[i]].isListed then table.insert(out, items[i]) end
+    end
+    -- Then deal with scenery
+    for key, value in pairs(world:scenery()) do
+        if value.loc == roomKey then table.insert(out, key) end
+    end
+    -- And then doors
+    for key, value in pairs(world.entities[roomKey].exits) do
+        if value.door then table.insert(out, value.door) end
+    end
+    return out
+end
+
 local function printExits(roomExits)
     local dirs = {}
     local out = ""
@@ -50,22 +86,23 @@ local function printExits(roomExits)
     return out
 end
 
--- Gets visible items from state and prints them.
-local function printRoomItems(roomKey, world, state)
-    local roomItems = state:visibleItems()
-    if #roomItems == 0 then return
-    elseif #roomItems == 1 then return "You see a " .. world.items[roomItems[1]].name .. "."
-    elseif #roomItems == 2 then return "You see a " .. world.items[roomItems[1]].name:lower() .. " and a " .. world.items[roomItems[2]].name:lower() .. "."
+-- Prints entities within the current room which have listed=true
+local function printEntities(roomKey, world, state)
+    local entityKeys = listedEntities(roomKey, world, state)
+    if #entityKeys == 0 then return end
+    local entities = world:getNames(entityKeys)
+    if #entities == 1 then return "You see a " .. entities[1] .. "."
+    elseif #entities == 2 then return "You see a " .. entities[1] .. " and a " .. entities[2] .. "."
     else 
-        local phrase = table.concat(roomItems, ", ", 1, #roomItems - 1) .. " and " .. roomItems[#roomItems]
-        return "You see " .. phrase .. "."
+        local phrase = table.concat(entities, ", a ", 1, #entities - 1) .. " and a " .. entities[#entities]
+        return "You see a " .. phrase .. "."
     end
 end
 
-local function printItemList(keys, world)
+local function listItems(keys, world)
     local out = { }
     for i = 1, #keys do
-        table.insert(out, world.items[keys[i]].name)
+        table.insert(out, world:items()[keys[i]].name)
     end
     table.sort(out)
     return out
@@ -79,10 +116,13 @@ end
 -- Handles LOOK - returns a desc of the room, visible items and visible exits. Calls
 -- printRoomItems() and printExits().
 local function verbLook(world, state)
-    local lines = { world.rooms[state.roomID].desc }
-    local itemLines = printRoomItems(state.roomID, world, state)
-    local exitLines = printExits(world.rooms[state.roomID].exits)
-    if itemLines then table.insert(lines, itemLines) end
+    -- The desc for the room.
+    local lines = { world:rooms()[state.roomID].desc }
+    -- Listed entities.
+    local entityLines = printEntities(state.roomID, world, state)
+    -- Exits.
+    local exitLines = printExits(world:rooms()[state.roomID].exits)
+    if entityLines then table.insert(lines, entityLines) end
     if exitLines then table.insert(lines, exitLines) end
     return { lines = lines, quit = false }
 end
@@ -93,12 +133,12 @@ local function verbGo(obj, world, state)
     if obj == "" then return { lines = { "Go where?" }, quit = false } end
     local dir = DIR_ALIASES[obj]
     if dir == nil then return { lines = { "I don't recognise that direction" }, quit = false } end
-    local roomDest = world.rooms[state.roomID].exits[dir].to
+    local roomDest = world:rooms()[state.roomID].exits[dir]
     if roomDest == nil then return { lines = { "There is no exit to the " .. dir .. "." }, quit = false} end
     
     -- Changes to state - this moves the player.
-    state.roomID = roomDest
-    state.visited[roomDest] = true
+    state.roomID = roomDest.to
+    state.visited[roomDest.to] = true
 
     -- Report results
     local lines = {"You go " .. dir .. "."}
@@ -126,7 +166,7 @@ end
 -- Resolves INVENTORY - calls printItemList of the children of the inventory entity.
 local function verbInv(world, state)
     return {
-        lines = printItemList(state:children(state.invID), world),
+        lines = listItems(state:children(state.invID), world),
         quit = false
     }
 end
@@ -135,17 +175,26 @@ end
 local function verbTake(obj, world, state)
     local lines = { }
     if obj == "" then return { lines = { "Take what?" }, quit = false } end
-    local worldKey = world:resolveAlias(obj)
-    if state:isVisible(worldKey) then
-        local result = state:move(worldKey, state.invID)
-        if result == "success" then
-            table.insert(lines, "You take the " .. world.items[worldKey].name:lower() .. ".")
+    -- Create list of possibles.
+    -- Get list of entities for the room
+    local entities = listedEntities(state.roomID, world, state)
+    -- Resolve the obj as an alias for the found group of entities
+    local key = world:resolveAlias(obj, state, entities)
+    if key then
+        if world.entities[key].portable then
+            local result = state:move(key, state.invID)
+            if result == "success" then
+                table.insert(lines, "You take the " .. world:items()[key].name:lower() .. ".")
+            else
+                table.insert(lines, "Something went wrong.")
+            end
         else
-            table.insert(lines, "Something went wrong.")
+            table.insert(lines, "You can't take this.")
         end
     else
         table.insert(lines, "There is no " .. obj .. " here.")
     end
+
     return {
         lines = lines,
         quit = false
@@ -156,16 +205,16 @@ end
 local function verbDrop(obj, world, state)
     local lines = {}
     if obj == "" then return { lines = { "Drop what?" }, quit = false } end
-    local worldKey = world:resolveAlias(obj)
-    if state:inContainer(worldKey, state.invID) then
+    local worldKey = world:resolveAlias(obj, state, state:invKeys())
+    if worldKey then
         local result = state:move(worldKey, state.roomID)
         if result == "success" then
-            table.insert(lines, "You drop the " .. world.items[worldKey].name:lower() .. ".")
+            table.insert(lines, "You drop the " .. world:items()[worldKey].name:lower() .. ".")
         else
             table.insert(lines, "Something went wrong.")
         end
     else
-        table.insert(lines, "There is no " .. obj .. " to drop.")
+        table.insert(lines, "You have no " .. obj .. " to drop.")
     end
     return {
         lines = lines,
@@ -177,12 +226,13 @@ end
 local function verbExamine(obj, world, state)
     local lines = {}
     if obj == "" then return { lines = { "Examine what?" }, quit = false } end
-    local worldKey = world:resolveAlias(obj)
-    if state:isVisible(worldKey) then
-        table.insert(lines, world.items[worldKey].desc)
-    else
-        table.insert(lines, "There is no " .. obj .. ".")
-    end
+    -- Get list of examinable entities (not listed, as includes scenery, etc)
+    local entities = xEntities(state.roomID, world, state)
+    -- Resolve obj as an alias of any of the entities
+    local key = world:resolveAlias(obj, state, entities)
+    if key then table.insert(lines, world.entities[key].desc)
+    else table.insert(lines, "There is no " .. obj .. " here.") end
+
     return {
         lines = lines,
         quit = false

@@ -5,6 +5,7 @@ return {
         desc = "A crumpled note: 'DON'T TRUST THE DOOR.'",
         aliases = { "note", "paper" },
         portable = true,
+        isListed = true,
         icon = "note",
     },
     brass_key = {
@@ -13,6 +14,7 @@ return {
         desc = "A worn brass key.",
         aliases = { "key" },
         portable = true,
+        isListed = true,
         icon = "key",
     },
     inv = {
@@ -20,6 +22,7 @@ return {
         name = "Inventory",
         desc = "Your pockets, such as they are.",
         isContainer = true,
+        isListed = false,
     },
     chest_cell = {
         kind = "item",
@@ -31,6 +34,7 @@ return {
         isOpen = false,
         lockable = true,
         portable = false,
+        isListed = true,
         icon = "chest",
     },
 }

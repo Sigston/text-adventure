@@ -90,7 +90,7 @@ function love.draw()
     layout:drawBackground()
     logUI:draw(logRect, monoFont)
     inputUI:draw(inputRect, monoFont)
-    headerUI:draw(headerRect, monoFont, world.rooms[state.roomID].name)
+    headerUI:draw(headerRect, monoFont, world:rooms()[state.roomID].name)
     mapUI:draw(mapRect, monoFont, world.mapdata)
     invUI:draw(invRect)
 end
