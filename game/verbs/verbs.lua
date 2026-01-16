@@ -56,6 +56,8 @@ for key, value in pairs(verbs) do
     if act then value.act = act end
     local report = require("game.verbs." .. key).report
     if report then value.report = report end
+    local doVerb = require("game.verbs." .. key).doVerb
+    if doVerb then value.doVerb = doVerb end
 end
 
 return verbs

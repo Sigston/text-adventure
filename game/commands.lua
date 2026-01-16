@@ -143,35 +143,6 @@ local function verbGo(obj, world, state)
     return { lines = lines, quit = false }
 end
 
--- Resolves TAKE - deals with aliases, checks if visible, moves (or otherwise) and reports.
-local function verbTake(obj, world, state)
-    local lines = { }
-    if obj == "" then return { lines = { "Take what?" }, quit = false } end
-    -- Create list of possibles.
-    -- Get list of entities for the room, including items in open containers
-    local entities = listedEntities(state.roomID, world, state)
-    for i = 1, #entities do
-        if world.entities[entities[i]].isContainer == true and state.open[entities[i]] then
-            local contents = state:children(entities[i])
-            for i = 1, #contents do table.insert(entities, contents[i]) end
-        end
-    end
-    -- Resolve the obj as an alias for the found group of entities
-    local key = world:resolveAlias(obj, state, entities)
-    if key then
-        if world.entities[key].portable then
-            local result = state:move(key, state.invID)
-            if result == "success" then
-                table.insert(lines, "You take the " .. world:items()[key].name:lower() .. ".")
-            else table.insert(lines, "Something went wrong.") end
-        else table.insert(lines, "You can't take this.") end
-    else table.insert(lines, "There is no " .. obj .. " here.") end
-    return {
-        lines = lines,
-        quit = false
-    }
-end
-
 -- Resolves DROP - deals with aliases, checks if in inventory, moves to room and reports.
 local function verbDrop(obj, world, state)
     local lines = {}
@@ -375,7 +346,7 @@ local function doVerb(verb, object, world, state)
     local lines = { }
     local quit = false
 
-    if verbs[verb].resolve then entities = verbs[verb].resolve(object or "", world, state) end
+    if verbs[verb].resolve then entities = verbs[verb].resolve(world, state) end
     if verbs[verb].act then response = verbs[verb].act(entities or {}, object or "", world, state) end
     if verbs[verb].report then lines, quit = verbs[verb].report(response or "", world, state) end
     return { lines = lines, quit = quit }
