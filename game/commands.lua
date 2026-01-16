@@ -120,25 +120,6 @@ local function listItems(keys, world)
     return out
 end
 
--- Handles QUIT - passes back quit = true
-local function verbQuit(world, state)
-    return { lines = {}, quit = true }
-end
-
--- Handles LOOK - returns a desc of the room, visible items and visible exits. Calls
--- printRoomItems() and printExits().
-local function verbLook(world, state)
-    -- The desc for the room.
-    local lines = { world:rooms()[state.roomID].desc }
-    -- Listed entities.
-    local entityLines = printEntities(state.roomID, world, state)
-    -- Exits.
-    local exitLines = printExits(world:rooms()[state.roomID].exits)
-    if entityLines then table.insert(lines, entityLines) end
-    if exitLines then table.insert(lines, exitLines) end
-    return { lines = lines, quit = false }
-end
-
 local function goDir(dir, roomKey, world, state)
     local lines = { }
     -- Changes to state - this moves the player.
@@ -439,15 +420,13 @@ function M.handle(line, world, state)
     if not tokens then return out end
     -- Short circuit verb processing if the game is done
     if state.flags.won then
-        if tokens.verb == "quit" then return verbQuit(world, state) end
+        if tokens.verb == "quit" then return doVerb(tokens.verb, tokens.objects[1], world, state) end
         return { lines = { "It's over. Type 'quit'."}, quit = false }
     end
     -- Resolve verb
     out = doVerb(tokens.verb, tokens.objects[1], world, state)
 
     --[[
-    if verb == "quit" then
-        out = verbQuit(world, state)
     elseif verb == "go" then
         out = verbGo(ws[2] or "", world, state)
     elseif DIR_ALIASES[verb] then

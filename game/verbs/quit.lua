@@ -1,10 +1,5 @@
-local function resolve()
-end
-
-local function act()
-end
-
 local function report()
+    return { }, true
 end
 
-return { resolve = resolve, act = act, report = report }
+return { report = report }
