@@ -61,7 +61,7 @@ function M.new()
         local room = world:rooms()[roomID]
         if room then
             if state.visited[roomID] then return room.desc
-            else return room.firstTimeDesc end
+            else return room.firstTimeDesc or room.desc end
         else return end
     end
 

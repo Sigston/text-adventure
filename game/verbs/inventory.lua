@@ -11,6 +11,7 @@ end
 
 local function report(response, world, state)
     local lines = listItems(Inventory.list(state), world)
+    if #lines < 1 then lines = { "There is nothing in your inventory." } end
     return lines, false
 end
 

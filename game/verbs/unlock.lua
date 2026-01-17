@@ -3,6 +3,7 @@ local function doUnlock(key, state)
 end
 
 local helper = require("game.verbs.verbhelper")
+local Inventory = require("game.inventory")
 
 local function resolve(world, state)
     return helper.xEntities(state.roomID, world, state)
@@ -16,7 +17,7 @@ local function act(entities, object, world, state)
         local entity = world.entities[key]
         if entity.lockable then
             if state.locked[key] then
-                local inventory = state:invKeys()
+                local inventory = Inventory.list(state)
                 for i = 1, #inventory do
                     if world.entities[key].key == inventory[i] then doUnlock(key, state) end
                 end

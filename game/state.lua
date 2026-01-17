@@ -19,7 +19,7 @@ function M.new(world, startRoomID)
         inv = "player",
         chest_cell = "cell",
         brass_key = "bag",
-        note = "inv",
+        note = "chest_cell",
         bag = "cell"
     }
     state.open = {

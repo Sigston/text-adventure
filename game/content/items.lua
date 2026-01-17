@@ -33,6 +33,7 @@ return {
         openable = true,
         lockable = true,
         portable = false,
+        notPortable = "This is too heavy to carry.",
         isListed = true,
         key = "brass_key",
         icon = "chest",

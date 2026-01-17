@@ -7,7 +7,7 @@ return {
     cell_door = {
         kind = "door",
         name = "Cell Door",
-        desc = "A heavy institutional door with a small, scratched window.",
+        desc = "A heavy institutional door.",
         aliases = { "door", "cell door", "holding cell door" },
         openable = true,
         lockable = true,
