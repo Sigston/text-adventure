@@ -1,5 +1,35 @@
 local M = { }
 
+local function inRect(x, y, rect)
+    return (x >= rect.X and x <= rect.X + rect.W) and (y >= rect.Y and y <= rect.Y + rect.H)
+end
+
+local function drawVerticalTab(layout, tabRect, title, hovered)
+    if tabRect.W <= 0 or tabRect.H <= 0 then return end
+
+    -- Tab background
+    if hovered then
+        layout.theme:set("accent")
+    else
+        layout.theme:set("panel")
+    end
+    love.graphics.rectangle("fill", tabRect.X, tabRect.Y, tabRect.W, tabRect.H)
+
+    -- Border line between tab and content
+    layout.theme:set("border")
+    love.graphics.setLineWidth(1)
+    love.graphics.rectangle("line", tabRect.X + 0.5, tabRect.Y + 0.5, tabRect.W - 1, tabRect.H - 1)
+
+    -- Vertical title
+    layout.theme:set(hovered and "headerText" or "textHi")
+    love.graphics.push()
+    love.graphics.translate(tabRect.X + tabRect.W / 2, tabRect.Y + tabRect.H / 2)
+    love.graphics.rotate(-math.pi / 2)
+    -- After rotation, the logical width is the original height
+    love.graphics.printf(title, -tabRect.H / 2, -layout.lineHeight / 2, tabRect.H, "center")
+    love.graphics.pop()
+end
+
 function M.new(layout)
     local self = {
         layout = layout,
@@ -73,13 +103,53 @@ function M.new(layout)
     end
 
     function self:draw(mapRect, font, mapData)
-        -- Draw the background
+        -- Background
         layout.theme:set("panel")
         love.graphics.rectangle("fill", mapRect.X, mapRect.Y, mapRect.W, mapRect.H)
 
+        -- Tab lives on the *inner* edge (right side for the map)
+        local tabW = layout.tabClosedWidth
+        local tabRect = {
+            X = mapRect.X + math.max(0, mapRect.W - tabW),
+            Y = mapRect.Y,
+            W = math.min(tabW, mapRect.W),
+            H = mapRect.H,
+        }
+
+        local mx, my = love.mouse.getPosition()
+        drawVerticalTab(layout, tabRect, "Map", inRect(mx, my, tabRect))
+
+        -- If collapsed, show only the tab.
+        if mapRect.W <= tabW + 5 then
+            return
+        end
+
+        -- "Wipe" animation: keep content laid out at full open width, and clip to the
+        -- currently visible area. This avoids the map shrinking as the panel animates.
+        local fullPanelW = layout.tabOpenWidth
+        local fullContentRect = {
+            X = mapRect.X + (mapRect.W - fullPanelW),
+            Y = mapRect.Y,
+            W = fullPanelW - tabW,
+            H = mapRect.H,
+        }
+
+        local visibleContentRect = {
+            X = mapRect.X,
+            Y = mapRect.Y,
+            W = math.max(0, mapRect.W - tabW),
+            H = mapRect.H,
+        }
+
+        -- Clip to the visible content area.
+        love.graphics.setScissor(visibleContentRect.X, visibleContentRect.Y, visibleContentRect.W, visibleContentRect.H)
+
         -- Get the inner rect (with padding)
-        local inner = self.layout:inner(mapRect)
-        if inner.W <= 0 or inner.H <=0 then return end
+        local inner = self.layout:inner(fullContentRect)
+        if inner.W <= 0 or inner.H <= 0 then
+            love.graphics.setScissor()
+            return
+        end
 
         -- Structure data a little so we can lookup
         local byID = {}
@@ -90,7 +160,10 @@ function M.new(layout)
         -- Get spans for working with: +1, as the bounds are 0 indexed.
         local spanX = (mapData.bounds.maxX - mapData.bounds.minX + 1)
         local spanY = (mapData.bounds.maxY - mapData.bounds.minY + 1)
-        if spanX <= 0 or spanY <= 0 then return end
+        if spanX <= 0 or spanY <= 0 then
+            love.graphics.setScissor()
+            return
+        end
 
         -- Draw the edges and the nodes
         love.graphics.setCanvas(self.canvas)
@@ -106,6 +179,9 @@ function M.new(layout)
         local drawY = inner.Y + (inner.H - canvasH * scale) / 2
         love.graphics.setColor(1, 1, 1, 1)
         love.graphics.draw(self.canvas, math.floor(drawX + 0.5), math.floor(drawY + 0.5), 0, scale, scale)
+
+        -- Clear clip.
+        love.graphics.setScissor()
     end
 
     return self

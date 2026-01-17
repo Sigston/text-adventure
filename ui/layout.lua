@@ -13,7 +13,7 @@ function M.new()
         mapChanging = false,
         invChanging = false,
         changeSpeed = 2500,
-        tabOpenWidth = 300,
+        tabOpenWidth = 250,
         tabClosedWidth = 20,
         mapWidth = 0,
         invWidth = 0,
@@ -32,6 +32,31 @@ function M.new()
             return true
         end
         return false
+    end
+
+    -- Returns the clickable tab rects for the left (map) and right (inventory) panels.
+    -- Tabs are always the edge strip; when a panel is collapsed, the tab is the whole panel.
+    function self:tabRects()
+        local _, _, _, mapRect, invRect = self:rects()
+
+        local mapTabW = math.min(self.tabClosedWidth, mapRect.W)
+        local invTabW = math.min(self.tabClosedWidth, invRect.W)
+
+        local mapTab = {
+            X = mapRect.X + (mapRect.W - mapTabW),
+            Y = mapRect.Y,
+            W = mapTabW,
+            H = mapRect.H,
+        }
+
+        local invTab = {
+            X = invRect.X,
+            Y = invRect.Y,
+            W = invTabW,
+            H = invRect.H,
+        }
+
+        return mapTab, invTab
     end
 
     function self:animatePanel(widthKey, openKey, changingKey, dt)
@@ -84,19 +109,19 @@ function M.new()
     end
 
     function self:handleClick(x, y, button)
-        local _, _, _, mapRect, invRect = self:rects()
-        if inRect(x, y, mapRect) then
+        local mapTab, invTab = self:tabRects()
+        if inRect(x, y, mapTab) then
             self.mapChanging = true
-        elseif inRect(x, y, invRect) then
+        elseif inRect(x, y, invTab) then
             self.invChanging = true
         end
     end
 
     function self:handleMouseMove(x, y)
-        local _, _, _, mapRect, invRect = self:rects()
-        if inRect(x, y, mapRect) then
+        local mapTab, invTab = self:tabRects()
+        if inRect(x, y, mapTab) then
             love.mouse.setCursor(self.cursors.hand)
-        elseif inRect(x, y, invRect) then
+        elseif inRect(x, y, invTab) then
             love.mouse.setCursor(self.cursors.hand)
         else
             love.mouse.setCursor(self.cursors.arrow)

@@ -96,7 +96,7 @@ function love.draw()
     inputUI:draw(inputRect, monoFont)
     headerUI:draw(headerRect, monoFont, world:rooms()[state.roomID].name)
     mapUI:draw(mapRect, monoFont, world.mapdata)
-    invUI:draw(invRect)
+    invUI:draw(invRect, monoFont, world, state)
 end
 
 local _love_errorhandler = love.errorhandler
