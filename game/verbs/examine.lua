@@ -1,7 +1,14 @@
 local helper = require("game.verbs.verbhelper")
 
 local function resolve(world, state)
-    return helper.xEntities(state.roomID, world, state)
+    local entities = helper.xEntities(state.roomID, world, state)
+    for i = 1, #entities do
+        if world.entities[entities[i]].isContainer == true and state.open[entities[i]] then
+            local contents = state:children(entities[i])
+            for i = 1, #contents do table.insert(entities, contents[i]) end
+        end
+    end
+    return entities
 end
 
 local function act(entities, object, world, state)

@@ -1,4 +1,6 @@
-local verbs = {
+local M = { }
+
+M.verbs = {
     look = {
         kind = "intrans",
         aliases = { "l", "look" },
@@ -21,7 +23,7 @@ local verbs = {
     },
     take = {
         kind = "direct",
-        aliases = { "t", "take" },
+        aliases = { "t", "take", "pick up" },
     },
     drop = {
         kind = "direct",
@@ -29,7 +31,7 @@ local verbs = {
     },
     examine = {
         kind = "direct",
-        aliases = { "x", "examine" },
+        aliases = { "x", "examine", "look at" },
     },
     open = {
         kind = "direct",
@@ -49,7 +51,8 @@ local verbs = {
     },
 }
 
-for key, value in pairs(verbs) do
+-- Adds their functions to the table dynamically from the files.
+for key, value in pairs(M.verbs) do
     local resolve = require("game.verbs." .. key).resolve
     if resolve then value.resolve = resolve end
     local act = require("game.verbs." .. key).act
@@ -60,9 +63,10 @@ for key, value in pairs(verbs) do
     if doVerb then value.doVerb = doVerb end
 end
 
-local function generateAliases(verbs)
+-- Returns a structured list of corresponding verbs and aliases.
+function M:generateAliases()
     local out = {}
-    for verbName, verb in pairs(verbs) do
+    for verbName, verb in pairs(M.verbs) do
         for _, alias in pairs(verb.aliases) do
             out[alias] = verbName
         end
@@ -70,4 +74,23 @@ local function generateAliases(verbs)
     return out
 end
 
-return {verbs, generateAliases(verbs)}
+function M:tokenize()
+    local aliases = M:generateAliases()
+    local out = { }
+
+    local function split(s)
+        local out = { }
+        for word in s:gmatch("%S+") do
+            table.insert(out, word)
+        end
+        return out
+    end
+
+    for key, value in pairs(aliases) do
+        if out[value] then table.insert(out[value], split(key))
+        else out[value] = {split(key)} end
+    end
+    return out
+end
+
+return M

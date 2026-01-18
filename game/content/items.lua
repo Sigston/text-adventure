@@ -12,7 +12,7 @@ return {
         kind = "item",
         name = "Brass Key",
         desc = "A worn brass key.",
-        aliases = { "key" },
+        aliases = { "key", "brass key" },
         portable = true,
         isListed = true,
         icon = "key",
