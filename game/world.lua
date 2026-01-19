@@ -41,6 +41,11 @@ function M.new()
     function world:resolveAlias(alias, state, entities)
         local matchList = { }
         entities = entities or world.entities
+        -- Check if the user entered an ID rather than an alias - useful for when the handle() is
+        -- triggered internally with a unique ID.
+        for _, value in pairs(entities) do
+            if value == alias then return alias, "found" end
+        end
         for i, _ in ipairs(entities) do
             local entity = world.entities[entities[i]]
             for _, value in ipairs(entity.aliases) do
@@ -50,8 +55,13 @@ function M.new()
         if #matchList == 1 then return matchList[1], "found"
         elseif #matchList == 0 then return nil, "not_found"
         else
-            state:setPending("disambig", "directObject", matchList, "take")
-            return nil, "duplicates"
+            table.sort(matchList)
+            local returnList = { }
+            for i = 1, #matchList do
+                returnList[i] = { id = matchList[i] }
+            end
+            state:setPending("disambig", "directObject", returnList, alias)
+            return nil, "disambig"
         end
     end
 
@@ -63,6 +73,14 @@ function M.new()
             end
         end
         return out
+    end
+
+    function world:getAliases(key)
+        return world.entities[key].aliases
+    end
+
+    function world:getName(key)
+        return world.entities[key].name
     end
 
     function world:getDesc(roomID, state)

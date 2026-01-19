@@ -10,25 +10,25 @@ local function resolve(world, state)
 end
 
 local function act(entities, object, world, state)
-    local lines = { }
     if object == "" then return { "Unlock what?" } end
-    local key = world:resolveAlias(object.direct, state, entities)
-    if key then
-        local entity = world.entities[key]
-        if entity.lockable then
-            if state.locked[key] then
-                local inventory = Inventory.list(state)
-                for i = 1, #inventory do
-                    if world.entities[key].key == inventory[i] then doUnlock(key, state) end
-                end
-                if state.locked[key] then table.insert(lines, "You don't have the correct key.")
-                else table.insert(lines, "You unlock the " .. entity.name:lower() .. ".") end
-            else
-                table.insert(lines, "The " .. entity.name:lower() .. " is already unlocked.")
-            end
-        else table.insert(lines, "You can't unlock that.") end
-    else table.insert(lines, "There is no " .. object.direct .. " here.") end
-    return lines
+    local direct, result = world:resolveAlias(object.direct, state, entities)
+    if not direct then
+        if result == "not_found" then return { "There is no " .. world:getName(direct):lower() .. " here."}
+        elseif result == "disambig" then return { result }
+        else return end
+    end
+    local entity = world.entities[direct]
+    if not entity.lockable then return { "You can't unlock that." } end
+    if state.locked[direct] then
+        local inventory = Inventory.list(state)
+        for i = 1, #inventory do
+            if world.entities[direct].key == inventory[i] then doUnlock(direct, state) end
+        end
+        if state.locked[direct] then return { "You don't have the correct key." }
+        else return { "You unlock the " .. entity.name:lower() .. "." } end
+    else
+        return { "The " .. entity.name:lower() .. " is already unlocked." }
+    end
 end
 
 local function report(response)

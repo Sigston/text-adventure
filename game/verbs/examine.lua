@@ -12,30 +12,32 @@ local function resolve(world, state)
 end
 
 local function act(entities, object, world, state)
+    if object == "" then return { "Examine what?" } end
+    local direct, result = world:resolveAlias(object.direct, state, entities)
+    if not direct then
+        if result == "not_found" then return { "There is no " .. world:getName(direct):lower() .. " here."}
+        elseif result == "disambig" then return { result }
+        else return end
+    end
     local lines = { }
-    if object ~= "" then
-        local key = world:resolveAlias(object.direct, state, entities)
-        if key then
-            local desc = world.entities[key].desc
-            if world.entities[key].isContainer or world.entities[key].kind == "door" then
-                if state.open[key] then
-                    local contents = world:getNames(state:children(key))
-                    if #contents > 0 then
-                        desc = desc .. " It is open. Inside you see" .. helper.aLister(contents)
-                    else
-                        desc = desc .. " It is open."
-                    end
-                else
-                    if state.locked[key] then
-                        desc = desc .. " It is closed and locked."
-                    else
-                        desc = desc .. " It is closed."
-                    end
-                end
+    local desc = world.entities[direct].desc
+    if world.entities[direct].isContainer or world.entities[direct].kind == "door" then
+        if state.open[direct] then
+            local contents = world:getNames(state:children(direct))
+            if #contents > 0 then
+                desc = desc .. " It is open. Inside you see" .. helper.aLister(contents)
+            else
+                desc = desc .. " It is open."
             end
-            table.insert(lines, desc)
-        else table.insert(lines, "There is no " .. object.direct .. " here.") end
-    else table.insert(lines, "Examine what?") end
+        else
+            if state.locked[direct] then
+                desc = desc .. " It is closed and locked."
+            else
+                desc = desc .. " It is closed."
+            end
+        end
+    end
+    table.insert(lines, desc)
     return lines
 end
 

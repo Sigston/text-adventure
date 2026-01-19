@@ -15,20 +15,34 @@ local function doVerb(verb, object, world, state)
     if verb == "" then return { lines = { "I don't understand that." }, quit = quit } end
     if verbList[verb].resolve then entities = verbList[verb].resolve(world, state) end
     if verbList[verb].act then response = verbList[verb].act(entities or {}, object or "", world, state, verbList) end
-    if response[1] == "duplicates" then return
+    if response[1] == "disambig" then state.pending.verb = verb; return { status = response[1] }
     else
         if verbList[verb].report then lines, quit = verbList[verb].report(response or "", world, state) end
-        return { lines = lines, quit = quit }
+        return { status = "ok", lines = lines, quit = quit }
     end
 end
 
-function M.enterDisambig(world, state)
-
-    return { lines = { "User input is ambiguous. Please enter..." }, quit = false }
-end
-
 function M.disambig(line, world, state)
-    return { lines = { "Still not working for me, honey." }, quit = false }, false
+    local tokens = Tokenizer.tokenize(line)
+    if tokens then
+        for _, verbAlias in ipairs(verbList.quit.aliases) do
+            if verbAlias == tokens[1] then
+                state.pending = nil
+                return { status = "quitting_disambig" }
+            end
+        end
+        local i = tonumber(tokens[1])
+        if i then
+            for index, _ in ipairs(state.pending.candidates) do
+                if index == i then
+                    local out = { status = "ok", lines = { state.pending.verb .. " " .. state.pending.candidates[i].id }, quit = false }
+                    state.pending = nil
+                    return  out
+                end
+            end
+        end
+    end
+    return { status = "disambig", lines = { "Please select a listed item number, or quit." }, quit = false }
 end
 
 function M.handle(line, world, state)

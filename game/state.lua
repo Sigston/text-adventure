@@ -15,7 +15,8 @@ function M.new(world, startRoomID)
         open = {},
         locked = {},
         parents = {},
-        -- nil; or kind, slot, candidates, verb
+        -- nil; or kind ("disambig", etc: reason for pending), slot (what part we're disambiguating, i.e., "directObj", "indirectObj"), 
+        -- candidates (structured as candidates = { id = "blah" }, { id = "blah2" }), and verb
         pending = nil,
     }
 
@@ -27,14 +28,26 @@ function M.new(world, startRoomID)
 
     Inventory.rebuild(state)
 
-    function state:setPending(kind, slot, candidates, verb)
+    function state:setPending(kind, slot, candidates, source, verb)
         local result = {
             kind = kind,
             slot = slot,
             candidates = candidates,
-            verb = verb
+            source = source,
+            verb = verb,
         }
         state.pending = result
+    end
+
+    -- Note: the action itself will have set state.pending: this function is called in main.lua
+    -- to take care of any further actions and return string text to print to request user input.
+    function state:changeState(world, from, to)
+        local options = { }
+        table.insert(options, "Which " .. state.pending.source .. "?")
+        for i = 1, #state.pending.candidates do
+            table.insert(options, i .. ". " .. world:getName(state.pending.candidates[i].id))
+        end
+        return options
     end
 
     function state:children(containerID)

@@ -10,44 +10,43 @@ local function resolve(world, state)
 end
 
 local function act(entities, object, world, state)
-    local lines = {}
     if object == "" then return { "Open what?" } end
-    local key = world:resolveAlias(object.direct, state, entities)
-    if key then
-        local entity = world.entities[key]
-        if entity.openable then
-            if state.open[key] then table.insert(lines, "The " .. entity.name:lower() .. " is already open.")
-            else
-                if state.locked[key] then
-                    local inventory = Inventory.list(state)
-                    for i = 1, #inventory do
-                        if world.entities[key].key == inventory[i] then state.locked[key] = false end
-                    end
-                    if state.locked[key] == false then 
-                        table.insert(lines, "You unlock the " .. entity.name:lower() .. " with the " .. world.entities[world.entities[key].key].name:lower() .. ".")
-                        doOpen(key, state)
-                        local response = "You open the " .. entity.name:lower() .. "."
-                        local contents = state:children(key)
-                        if #contents > 0 then
-                            response = response .. " Inside you see" .. helper.aLister(world:getNames(contents))
-                        end
-                        table.insert(lines, response)
-                    else
-                        table.insert(lines, "The " .. entity.name:lower() .. " is locked.")
-                    end
-                else
-                    doOpen(key, state)
-                    local response = "You open the " .. entity.name:lower() .. "."
-                    local contents = state:children(key)
-                    if #contents > 0 then
-                        response = response .. " Inside you see" .. helper.aLister(world:getNames(contents))
-                    end
-                    table.insert(lines, response)
-                end
+    local direct, result = world:resolveAlias(object.direct, state, entities)
+    if not direct then
+        if result == "not_found" then return { "There is no " .. world:getName(direct):lower() .. " here."}
+        elseif result == "disambig" then return { result }
+        else return end
+    end
+    local entity = world.entities[direct]
+    if not entity.openable then return { "you can't open that." } end
+    if state.open[direct] then return { "The " .. world:getName(direct):lower() .. " is already open." } end
+    -- Allow implied unlocking of containers/doors when opening attempted.
+    if state.locked[direct] then
+        local inventory = Inventory.list(state)
+        for i = 1, #inventory do
+            if world.entities[direct].key == inventory[i] then state.locked[direct] = false end
+        end
+        if state.locked[direct] == false then
+            local response = { "You unlock the " .. world:getName(direct):lower() .. " with the " .. world.entities[world.entities[direct].key].name:lower() .. "." }
+            doOpen(direct, state)
+            table.insert(response, "You open the " .. world:getName(direct):lower() .. ".")
+            local contents = state:children(direct)
+            if #contents > 0 then
+                table.insert(response, "Inside you see" .. helper.aLister(world:getNames(contents)))
             end
-        else table.insert(lines, "You can't open that.") end
-    else table.insert(lines, "There is no " .. object.direct .. " here.") end
-    return lines
+            return response
+        else
+            return { "The " .. world:getName(direct):lower() .. " is locked." }
+        end
+    else
+        doOpen(direct, state)
+        local response = "You open the " .. world:getName(direct):lower() .. "."
+        local contents = state:children(direct)
+        if #contents > 0 then
+            response = response .. " Inside you see" .. helper.aLister(world:getNames(contents))
+        end
+        return { response }
+    end
 end
 
 local function report(response)

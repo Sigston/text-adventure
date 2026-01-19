@@ -26,19 +26,25 @@ local function act(entities, object, world, state)
     if object.indirect == "" then return { "Put " .. object.prep .. " what?" } end
 
     -- Check direct - has to be in the inventory
-    local direct = world:resolveAlias(object.direct, state, Inventory.list(state))
-    local indirect = world:resolveAlias(object.indirect, state, entities)
-    if direct then
-        if indirect then
-            if world.entities[indirect].isContainer then
-                if state.open[indirect] then
-                    if doPut(direct, indirect, object.prep, state) == "success" then
-                        table.insert(lines, "You put the " .. object.direct .. " " .. object.prep .. " the " .. object.indirect .. ".")
-                    else table.insert(lines, "Something went wrong.") end
-                else table.insert(lines, "The " .. object.indirect .. " is not open.") end
-            else table.insert(lines, "You can't put anything " .. object.prep .. " the " .. object.indirect .. ".") end
-        else table.insert(lines, "There is no " .. object.indirect .. " to put the " .. object.direct .. " " .. object.prep .. ".") end
-    else table.insert(lines, "You have no " .. object.direct .. ".") end
+    local direct, dResult = world:resolveAlias(object.direct, state, Inventory.list(state))
+    local indirect, iResult = world:resolveAlias(object.indirect, state, entities)
+    if not direct then
+        if dResult == "not_found" then return { "You have no " .. world:getName(direct):lower() .. "."}
+        elseif dResult == "disambig" then return { dResult }
+        else return end
+    end
+    if not indirect then
+        if iResult == "not_found" then return { "There is no " .. world:getName(indirect):lower() .. " here."}
+        elseif iResult == "disambig" then return { iResult }
+        else return end
+    end
+    if world.entities[indirect].isContainer then
+        if state.open[indirect] then
+            if doPut(direct, indirect, object.prep, state) == "success" then
+                table.insert(lines, "You put the " .. object.direct .. " " .. object.prep .. " the " .. object.indirect .. ".")
+            else table.insert(lines, "Something went wrong.") end
+        else table.insert(lines, "The " .. object.indirect .. " is not open.") end
+    else table.insert(lines, "You can't put anything " .. object.prep .. " the " .. object.indirect .. ".") end
     return lines
 end
 

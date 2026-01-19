@@ -60,14 +60,16 @@ function love.keypressed(key)
         if not state.pending then
             -- Result is nil iff duplicates in object resolution - DONT USE NIL
             result = Commands.handle(payload, world, state)
-            if not result then result = state:changeState("game", state.pending.kind) end
+            if result.status ~= "ok" then result.lines = state:changeState(world, "ok", result.status) end
         else
             -- If the user's input means disambig is successful, then the flag is set,
             -- and the result is a workable payload for handle. Otherwise, result will be
             -- further options for the user.
-            local isDisambig = false
-            result, isDisambig = Commands.disambig(payload, world, state)
-            if isDisambig then result = Commands.handle(result, world, state) end
+            if state.pending.kind == "disambig" then
+                result = Commands.disambig(payload, world, state)
+                if result.status == "ok" then result = Commands.handle(result.lines[1], world, state)
+                elseif result.status == "quitting_disambig" then result.lines = { "Nevermind..." } end
+            end
         end
         if result then
             for _, line in ipairs(result.lines) do logUI:add(line) end

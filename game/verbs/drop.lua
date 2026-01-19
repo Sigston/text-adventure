@@ -10,15 +10,16 @@ local function resolve(world, state)
 end
 
 local function act(entities, object, world, state)
-    local lines = {}
     if object == "" then return { "Drop what?" } end
-    local worldKey = world:resolveAlias(object.direct, state, entities)
-    if worldKey then
-        if doDrop(worldKey, state) == "success" then
-            table.insert(lines, "You drop the " .. object.direct .. ".")
-        else table.insert(lines, "Something went wrong.") end
-    else table.insert(lines, "You have no " .. object.direct .. " to drop.") end
-    return lines
+    local direct, result = world:resolveAlias(object.direct, state, entities)
+    if not direct then
+        if result == "not_found" then return { "You have no " .. world:getName(direct):lower() .. " to drop."}
+        elseif result == "disambig" then return { result }
+        else return end
+    end
+    if doDrop(direct, state) == "success" then
+        return { "You drop the " .. world:getName(direct):lower() .. "." }
+    else return { "Something went wrong." } end
 end
 
 local function report(response)
