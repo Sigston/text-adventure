@@ -15,8 +15,20 @@ local function doVerb(verb, object, world, state)
     if verb == "" then return { lines = { "I don't understand that." }, quit = quit } end
     if verbList[verb].resolve then entities = verbList[verb].resolve(world, state) end
     if verbList[verb].act then response = verbList[verb].act(entities or {}, object or "", world, state, verbList) end
-    if verbList[verb].report then lines, quit = verbList[verb].report(response or "", world, state) end
-    return { lines = lines, quit = quit }
+    if response[1] == "duplicates" then return
+    else
+        if verbList[verb].report then lines, quit = verbList[verb].report(response or "", world, state) end
+        return { lines = lines, quit = quit }
+    end
+end
+
+function M.enterDisambig(world, state)
+
+    return { lines = { "User input is ambiguous. Please enter..." }, quit = false }
+end
+
+function M.disambig(line, world, state)
+    return { lines = { "Still not working for me, honey." }, quit = false }, false
 end
 
 function M.handle(line, world, state)

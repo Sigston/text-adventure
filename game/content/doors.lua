@@ -11,7 +11,7 @@ return {
         aliases = { "door", "cell door", "holding cell door" },
         openable = true,
         lockable = true,
-        key = "brass_key",
+        key = "iron_key",
         startsOpen = false,
         startsLocked = true,
     },

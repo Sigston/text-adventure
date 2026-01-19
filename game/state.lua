@@ -14,22 +14,28 @@ function M.new(world, startRoomID)
         inventory = { slots = { } },
         open = {},
         locked = {},
-    }
-
-    state.parents = {
-        inv = "player",
-        chest_cell = "cell",
-        brass_key = "bag",
-        note = "chest_cell",
-        bag = "cell"
+        parents = {},
+        -- nil; or kind, slot, candidates, verb
+        pending = nil,
     }
 
     for entityID, entityTable in pairs(world.entities) do
         state.open[entityID] = entityTable.startsOpen
         state.locked[entityID] = entityTable.startsLocked
+        state.parents[entityID] = entityTable.startsIn
     end
 
     Inventory.rebuild(state)
+
+    function state:setPending(kind, slot, candidates, verb)
+        local result = {
+            kind = kind,
+            slot = slot,
+            candidates = candidates,
+            verb = verb
+        }
+        state.pending = result
+    end
 
     function state:children(containerID)
         local children = {}

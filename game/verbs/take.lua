@@ -19,13 +19,17 @@ end
 
 local function act(entities, object, world, state)
     if object == "" then return { "Take what?" } end
-    local key = world:resolveAlias(object.direct, state, entities)
-    if not key then return { "There is no " .. object.direct .. " here."} end
-    if not world.entities[key].portable then 
-        local response = world.entities[key].notPortable
+    local direct, result = world:resolveAlias(object.direct, state, entities)
+    if not direct then
+        if result == "not_found" then return { "There is no " .. object.direct .. " here."}
+        elseif result == "duplicates" then return { result }
+        else return { "ERROR" } end
+    end
+    if not world.entities[direct].portable then 
+        local response = world.entities[direct].notPortable
         if response then return { response } else return {"You can't take this."} end
     end
-    local result = doTake(key, state)
+    local result = doTake(direct, state)
     if result == "success" then return { "You take the " .. object.direct .. "." }
     elseif result == "already" then return { "You already have the " .. object.direct .. "." }
     elseif result == "full" then return { "You have no more room in your inventory." }

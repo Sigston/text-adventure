@@ -7,6 +7,7 @@ return {
         portable = true,
         isListed = true,
         icon = "note",
+        startsIn = "chest_cell"
     },
     brass_key = {
         kind = "item",
@@ -16,6 +17,17 @@ return {
         portable = true,
         isListed = true,
         icon = "key",
+        startsIn = "bag"
+    },
+    iron_key = {
+        kind = "item",
+        name = "Iron Key",
+        desc = "A worn iron key.",
+        aliases = { "key", "iron key" },
+        portable = true,
+        isListed = true,
+        icon = "key",
+        startsIn = "bag"
     },
     inv = {
         kind = "item",
@@ -23,6 +35,7 @@ return {
         desc = "Your pockets, such as they are.",
         isContainer = true,
         isListed = false,
+        startsIn = "player"
     },
     chest_cell = {
         kind = "item",
@@ -38,6 +51,7 @@ return {
         key = "brass_key",
         icon = "chest",
         startsLocked = true,
+        startsIn = "cell",
     },
     bag = {
         kind = "item",
@@ -49,6 +63,7 @@ return {
         lockable = false,
         portable = false,
         isListed = true,
-        icon = "bag"
+        icon = "bag",
+        startsIn = "cell"
     }
 }

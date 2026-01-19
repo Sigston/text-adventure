@@ -56,18 +56,33 @@ function love.keypressed(key)
     local event, payload = inputUI:keypressed(key)
     if event == "submit" then
         logUI:add("> " .. payload)
-        local result = Commands.handle(payload, world, state)
-        for _, line in ipairs(result.lines) do logUI:add(line) end
-        world:generateMapData(state)
-        if result.quit then love.event.quit() end
-        if (not state.flags.won) and state.roomID == state.winRoomID then
-            state.flags.won = true
-            logUI:add("")
-            logUI:add("You step through the gate.")
-            logUI:add("For a second, you expect an alarm. Nothing happens.")
-            logUI:add("Air. Night. The world continues without permission.")
-            logUI:add("")
-            logUI:add("*** YOU WIN *** (type 'quit' to exit)")
+        local result = nil
+        if not state.pending then
+            -- Result is nil iff duplicates in object resolution - DONT USE NIL
+            result = Commands.handle(payload, world, state)
+            if not result then result = state:changeState("game", state.pending.kind) end
+        else
+            -- If the user's input means disambig is successful, then the flag is set,
+            -- and the result is a workable payload for handle. Otherwise, result will be
+            -- further options for the user.
+            local isDisambig = false
+            result, isDisambig = Commands.disambig(payload, world, state)
+            if isDisambig then result = Commands.handle(result, world, state) end
+        end
+        if result then
+            for _, line in ipairs(result.lines) do logUI:add(line) end
+            world:generateMapData(state)
+            if result.quit then love.event.quit() end
+
+            if (not state.flags.won) and state.roomID == state.winRoomID then
+                state.flags.won = true
+                logUI:add("")
+                logUI:add("You step through the gate.")
+                logUI:add("For a second, you expect an alarm. Nothing happens.")
+                logUI:add("Air. Night. The world continues without permission.")
+                logUI:add("")
+                logUI:add("*** YOU WIN *** (type 'quit' to exit)")
+            end
         end
     elseif event == "scroll" then
         logUI:scroll(payload)

@@ -36,14 +36,22 @@ function M.new()
     function world:rooms() return entitySubset("room") end
     function world:scenery() return entitySubset("scenery") end
 
-    -- For any string, returns the key of the first visible item found with that alias 
+    -- For any string, returns the key of the first visible item found with that alias,
+    -- and an outcome string ("found", "not_found", "duplicates")
     function world:resolveAlias(alias, state, entities)
+        local matchList = { }
         entities = entities or world.entities
         for i, _ in ipairs(entities) do
             local entity = world.entities[entities[i]]
             for _, value in ipairs(entity.aliases) do
-                if alias == value then return entities[i] end
+                if alias == value then table.insert(matchList, entities[i]) end
             end
+        end
+        if #matchList == 1 then return matchList[1], "found"
+        elseif #matchList == 0 then return nil, "not_found"
+        else
+            state:setPending("disambig", "directObject", matchList, "take")
+            return nil, "duplicates"
         end
     end
 
