@@ -30,9 +30,13 @@ local function act(entities, object, world, state)
     local indirect = world:resolveAlias(object.indirect, state, entities)
     if direct then
         if indirect then
-            if doPut(direct, indirect, object.prep, state) == "success" then
-                table.insert(lines, "You put the " .. object.direct .. " " .. object.prep .. " the " .. object.indirect .. ".")
-            else table.insert(lines, "Something went wrong.") end
+            if world.entities[indirect].isContainer then
+                if state.open[indirect] then
+                    if doPut(direct, indirect, object.prep, state) == "success" then
+                        table.insert(lines, "You put the " .. object.direct .. " " .. object.prep .. " the " .. object.indirect .. ".")
+                    else table.insert(lines, "Something went wrong.") end
+                else table.insert(lines, "The " .. object.indirect .. " is not open.") end
+            else table.insert(lines, "You can't put anything " .. object.prep .. " the " .. object.indirect .. ".") end
         else table.insert(lines, "There is no " .. object.indirect .. " to put the " .. object.direct .. " " .. object.prep .. ".") end
     else table.insert(lines, "You have no " .. object.direct .. ".") end
     return lines

@@ -37,6 +37,7 @@ return {
         isListed = true,
         key = "brass_key",
         icon = "chest",
+        startsLocked = true,
     },
     bag = {
         kind = "item",

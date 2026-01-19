@@ -26,7 +26,7 @@ function M.handle(line, world, state)
     if not parsedTokens then return { lines = { "What?" }, quit = false } end
     -- Short circuit verb processing if the game is done
     if state.flags.won then
-        if parsedTokens.verb == "quit" then return doVerb(parsedTokens.verb, parsedTokens.objects[1], world, state) end
+        if parsedTokens.verb == "quit" then return doVerb(parsedTokens.verb, parsedTokens.objects or "", world, state) end
         return { lines = { "It's over. Type 'quit'."}, quit = false }
     end
     return doVerb(parsedTokens.verb or "", parsedTokens.objects or "", world, state)

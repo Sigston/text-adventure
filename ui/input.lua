@@ -29,7 +29,7 @@ function M.new(layout)
 
     function self:textinput(t)
         self.input = insertAt(self.input, self.caretByte, t)
-        self.caretByte = self.caretByte + utf8.len(t)
+        self.caretByte = self.caretByte + #t
     end
 
     function self:keypressed(key)

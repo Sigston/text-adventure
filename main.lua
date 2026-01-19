@@ -24,7 +24,7 @@ local mapUI
 local layout
 local world
 local state
-local monoFont 
+local monoFont
 
 function love.load()
     monoFont = love.graphics.newFont("assets/space-mono.ttf", 13)
@@ -60,8 +60,8 @@ function love.keypressed(key)
         for _, line in ipairs(result.lines) do logUI:add(line) end
         world:generateMapData(state)
         if result.quit then love.event.quit() end
-        if (not state.won) and state.roomID == state.winRoomID then
-            state.won = true
+        if (not state.flags.won) and state.roomID == state.winRoomID then
+            state.flags.won = true
             logUI:add("")
             logUI:add("You step through the gate.")
             logUI:add("For a second, you expect an alarm. Nothing happens.")

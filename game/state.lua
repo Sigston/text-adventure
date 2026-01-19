@@ -11,8 +11,9 @@ function M.new(world, startRoomID)
         revealMap = false,
         invID = "inv",
         flags = { won = false },
-        entity = {},
         inventory = { slots = { } },
+        open = {},
+        locked = {},
     }
 
     state.parents = {
@@ -22,16 +23,11 @@ function M.new(world, startRoomID)
         note = "chest_cell",
         bag = "cell"
     }
-    state.open = {
-        chest_cell = false,
-        bag = false,
-        cell_door = false,
-    }
-    state.locked = {
-        chest_cell = true,
-        bag = false,
-        cell_door = true,
-    }
+
+    for entityID, entityTable in pairs(world.entities) do
+        state.open[entityID] = entityTable.startsOpen
+        state.locked[entityID] = entityTable.startsLocked
+    end
 
     Inventory.rebuild(state)
 
@@ -66,7 +62,7 @@ function M.new(world, startRoomID)
         local out = self:children(state.roomID)
         -- And the doors
         for key, value in pairs(world:rooms()[state.roomID].exits) do
-            table.insert(out, value.door)
+            if value.door then out[#out+1] = value.door end
         end
         return out
         -- Add some stuff here if we implement some items not being visible.

@@ -4,33 +4,6 @@ local STOP = {
     ["the"] = true, ["a"] = true, ["an"] = true,
 }
 
---[[
-
-tokens: { "look", "at", "the", "bag" }
-verbs: { "verb" = { {"alias"}, {"alias", "with", "words"} }
-
-aim: to get the best match from the strings at the beginning of tokens.
-
-there'll be n matches after checking the first words of all the aliases, then after
-checking all subsequent words, there'll be 1 match or >1 or 0. The last two are errors.
-
-    loop verbs and check first word of alias. If matches first word of tokens, add to matchList.
-    Is there one match or have we exhausted the longest alias? 
-    If more than one, go again, looking at the next word.
-
-    Do until break:
-        loop verbs and check each alias: if alias[1] == tokens[1], add the whole verb to the matchList.
-        if the current alias[1] is only [1] long, create preferredMatch.
-
-        Go through the matchList again, with [2] and [2]. Keep doing this until we exhaust the number of words
-        in the longest alias or the number of words in tokens.
-
-There is ambiguity here: if there was "pick" and "pick up" and something called "up bag", you
-would never be able to "pick" the "up bag", only "pick up" the "bag" - but this is likely
-never going to happen!
-
---]]
-
 local function noOfLongest(verbs)
     local number = 0
     for _, verbTable in pairs(verbs) do
@@ -80,11 +53,7 @@ end
 local function removeStop(tokens)
     local newTokens = { }
     for i = 1, #tokens do
-        local found = false
-        for word, _ in pairs(STOP) do
-            if tokens[i] == word then found = true end
-        end
-        if not found then table.insert(newTokens, tokens[i]) end
+        if not STOP[tokens[i]] then table.insert(newTokens, tokens[i]) end
     end
     return newTokens
 end

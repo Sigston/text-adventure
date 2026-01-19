@@ -39,9 +39,9 @@ function M.new()
     -- For any string, returns the key of the first visible item found with that alias 
     function world:resolveAlias(alias, state, entities)
         entities = entities or world.entities
-        for i = 1, #entities do
+        for i, _ in ipairs(entities) do
             local entity = world.entities[entities[i]]
-            for _, value in pairs(entity.aliases) do
+            for _, value in ipairs(entity.aliases) do
                 if alias == value then return entities[i] end
             end
         end

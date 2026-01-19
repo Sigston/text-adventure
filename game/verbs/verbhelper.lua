@@ -23,7 +23,7 @@ local function aLister(listNames)
     if #listNames == 0 then return 
     elseif #listNames == 1 then return " a " .. listNames[1] .. "." 
     elseif #listNames == 2 then return " a " .. listNames[1] .. " and a " .. listNames[2] .. "."
-    else return " a " .. table.concat(listNames, ", a ", 1, #listNames - 1) .. " and a " .. listNames[#listNames] end
+    else return " a " .. table.concat(listNames, ", a ", 1, #listNames - 1) .. " and a " .. listNames[#listNames] .. "." end
 end
 
 -- Prints entities within the current room which have listed=true
