@@ -18,79 +18,112 @@ checking all subsequent words, there'll be 1 match or >1 or 0. The last two are 
     Is there one match or have we exhausted the longest alias? 
     If more than one, go again, looking at the next word.
 
+    Do until break:
+        loop verbs and check each alias: if alias[1] == tokens[1], add the whole verb to the matchList.
+        if the current alias[1] is only [1] long, create preferredMatch.
+
+        Go through the matchList again, with [2] and [2]. Keep doing this until we exhaust the number of words
+        in the longest alias or the number of words in tokens.
+
 There is ambiguity here: if there was "pick" and "pick up" and something called "up bag", you
 would never be able to "pick" the "up bag", only "pick up" the "bag" - but this is likely
 never going to happen!
 
 --]]
 
--- Identifies the best verb match at the head of the tokens.
+local function noOfLongest(verbs)
+    local number = 0
+    for _, verbTable in pairs(verbs) do
+        for _, alias in pairs(verbTable) do
+            if #alias > number then number = #alias end
+        end
+    end
+    return number
+end
+
+local function addAlias(verbTable, verbID, alias)
+    local bucket = verbTable[verbID]
+    if not bucket then verbTable[verbID] = { alias }
+    else bucket[#bucket+1] = alias end
+end
+
+-- WARNING: no ambiguity handling
 local function processVerb(tokens, verbs)
-    local function count(dict)
-        local count = 0
-        for key, value in pairs(dict) do
-            count = count + 1
-        end
-        return count
-    end
+    local tempTable = { }
+    local checkTable = verbs
+    local preferredMatch = nil
+    local ingested = 0
 
-    -- Reduce verbs to those where there's a first word match.
-    local verbMatches = {}
-    for verb, verbTable in pairs(verbs) do
-        for _, alias in ipairs(verbTable) do
-            if tokens[1] == alias[1] then
-                verbMatches[verb] = verbTable
-                break
-            end
-        end
-    end
-
-    if count(verbMatches) == 1 then
-        local objects = { }
-        for i = 2, #tokens do
-            table.insert(objects, tokens[i])
-        end
-        local verb = ""
-        for v, _ in pairs(verbMatches) do verb = v end
-        return verb, objects
-    end
-
-    local nextMatches = {}
-    for verb, verbTable in pairs(verbMatches) do
-        for _, alias in ipairs(verbTable) do
-            if #alias > 1 then
-                if tokens[2] == alias[2] then
-                    nextMatches[verb] = verbTable
-                    break
+    for i = 1, math.min(#tokens, noOfLongest(verbs)) do
+        for verbID, verbTable in pairs(checkTable) do
+            for _, alias in ipairs(verbTable) do
+                if tokens[i] == alias[i] then
+                    addAlias(tempTable, verbID, alias)
+                    if #alias == i then
+                        preferredMatch = verbID
+                        ingested = i
+                    end
                 end
             end
         end
+        checkTable = tempTable
+        tempTable = { }
     end
 
-    if count(nextMatches) == 1 then
-        local objects = { }
-        for i = 3, #tokens do
-            table.insert(objects, tokens[i])
-        end
-        local verb = ""
-        for v, _ in pairs(nextMatches) do verb = v end
-        return verb, objects
+    local objects = { }
+    for i = ingested + 1, #tokens do
+        table.insert(objects, tokens[i])
     end
+    return preferredMatch, objects
 end
 
--- Removes STOP from tokens, and returns an object string
-local function processObjects(tokens)
-    if #tokens < 1 then return end
+local function removeStop(tokens)
     local newTokens = { }
     for i = 1, #tokens do
         local found = false
-        for word, value in pairs(STOP) do
+        for word, _ in pairs(STOP) do
             if tokens[i] == word then found = true end
         end
         if not found then table.insert(newTokens, tokens[i]) end
     end
-    local out = table.concat(newTokens, " ")
-    return out
+    return newTokens
+end
+
+local function prepLoc(tokens, prepList)
+    for i = 1, #tokens do
+        for j = 1, #prepList do
+            if tokens[i] == prepList[j] then return i end
+        end
+    end
+    return 0
+end
+
+-- First argument is direct object, second and third are indirect and prep
+local function splitObjects(tokens, prepList)
+    if #tokens < 1 then return end
+    if #tokens == 1 then return tokens[1] end
+    if prepList then
+        local loc = prepLoc(tokens, prepList)
+        if loc == 0 then return table.concat(tokens, " ") end
+        local direct, indirect, prep = "", "", ""
+        for i = 1, #tokens do
+            if i == loc then prep = tokens[i]
+            elseif i < loc then direct = direct .. " " .. tokens[i]
+            else indirect = indirect .. " " .. tokens[i] end
+        end
+        return direct:match("^%s*(.-)%s*$"), indirect:match("^%s*(.-)%s*$"), prep
+    else
+        return table.concat(tokens, " ")
+    end
+end
+
+-- Removes STOP from tokens, and returns direct, indirect, and prep
+local function processObjects(tokens, prepList)
+    local tokens = tokens or { }
+    if #tokens < 1 then return end
+    tokens = removeStop(tokens)
+    local direct, indirect, prep = splitObjects(tokens, prepList)
+    return { direct = direct, indirect = indirect, prep = prep }
 end
 
 function M.parse(tokens, Verb)
@@ -98,7 +131,7 @@ function M.parse(tokens, Verb)
     if not verbs then return end
     local verb, newTokens = processVerb(tokens, verbs)
     if not verb then return end
-    local objects = processObjects(newTokens)
+    local objects = processObjects(newTokens, Verb:prepList(verb))
     return { objects = objects, verb = verb }
 end
 

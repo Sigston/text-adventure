@@ -12,12 +12,12 @@ end
 local function act(entities, object, world, state)
     local lines = {}
     if object == "" then return { "Drop what?" } end
-    local worldKey = world:resolveAlias(object, state, entities)
+    local worldKey = world:resolveAlias(object.direct, state, entities)
     if worldKey then
         if doDrop(worldKey, state) == "success" then
-            table.insert(lines, "You drop the " .. object .. ".")
+            table.insert(lines, "You drop the " .. object.direct .. ".")
         else table.insert(lines, "Something went wrong.") end
-    else table.insert(lines, "You have no " .. object .. " to drop.") end
+    else table.insert(lines, "You have no " .. object.direct .. " to drop.") end
     return lines
 end
 

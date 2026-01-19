@@ -11,7 +11,7 @@ end
 local function act(entities, object, world, state)
     local lines = {}
     if object == "" then return { "Close what?" } end
-    local key = world:resolveAlias(object, state, entities)
+    local key = world:resolveAlias(object.direct, state, entities)
     if key then
         local entity = world.entities[key]
         if entity.kind == "item" then
@@ -26,7 +26,7 @@ local function act(entities, object, world, state)
         elseif entity.kind == "door" then
             print("HI")
         else table.insert(lines, "You can't close that.") end
-    else table.insert(lines, "There is no " .. object .. " here.") end
+    else table.insert(lines, "There is no " .. object.direct .. " here.") end
     return lines
 end
 

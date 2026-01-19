@@ -49,6 +49,11 @@ M.verbs = {
         kind = "direct",
         aliases = { "unlock" },
     },
+    put = {
+        kind = "indirect",
+        aliases = { "put", "place", "stick" },
+        preps = { "in" },
+    },
 }
 
 -- Adds their functions to the table dynamically from the files.
@@ -72,6 +77,10 @@ function M:generateAliases()
         end
     end
     return out
+end
+
+function M:prepList(verbID)
+    return M.verbs[verbID].preps
 end
 
 function M:tokenize()

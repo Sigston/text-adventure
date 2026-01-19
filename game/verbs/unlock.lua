@@ -12,7 +12,7 @@ end
 local function act(entities, object, world, state)
     local lines = { }
     if object == "" then return { lines = { "Lock what?" }, quit = false } end
-    local key = world:resolveAlias(object, state, entities)
+    local key = world:resolveAlias(object.direct, state, entities)
     if key then
         local entity = world.entities[key]
         if entity.lockable then
@@ -27,7 +27,7 @@ local function act(entities, object, world, state)
                 table.insert(lines, "The " .. entity.name:lower() .. " is already unlocked.")
             end
         else table.insert(lines, "You can't unlock that.") end
-    else table.insert(lines, "There is no " .. object .. " here.") end
+    else table.insert(lines, "There is no " .. object.direct .. " here.") end
     return lines
 end
 

@@ -19,15 +19,15 @@ end
 
 local function act(entities, object, world, state)
     if object == "" then return { "Take what?" } end
-    local key = world:resolveAlias(object, state, entities)
-    if not key then return { "There is no " .. object .. " here."} end
+    local key = world:resolveAlias(object.direct, state, entities)
+    if not key then return { "There is no " .. object.direct .. " here."} end
     if not world.entities[key].portable then 
         local response = world.entities[key].notPortable
         if response then return { response } else return {"You can't take this."} end
     end
     local result = doTake(key, state)
-    if result == "success" then return { "You take the " .. object .. "." }
-    elseif result == "already" then return { "You already have the " .. object .. "." }
+    if result == "success" then return { "You take the " .. object.direct .. "." }
+    elseif result == "already" then return { "You already have the " .. object.direct .. "." }
     elseif result == "full" then return { "You have no more room in your inventory." }
     else return { "Something went wrong." } end
 end

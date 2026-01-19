@@ -14,7 +14,7 @@ end
 local function act(entities, object, world, state)
     local lines = { }
     if object ~= "" then
-        local key = world:resolveAlias(object, state, entities)
+        local key = world:resolveAlias(object.direct, state, entities)
         if key then
             local desc = world.entities[key].desc
             if world.entities[key].isContainer or world.entities[key].kind == "door" then
@@ -34,7 +34,7 @@ local function act(entities, object, world, state)
                 end
             end
             table.insert(lines, desc)
-        else table.insert(lines, "There is no " .. object .. " here.") end
+        else table.insert(lines, "There is no " .. object.direct .. " here.") end
     else table.insert(lines, "Examine what?") end
     return lines
 end

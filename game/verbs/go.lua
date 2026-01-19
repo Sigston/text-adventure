@@ -12,7 +12,7 @@ local function act(entities, object, world, state, verbs)
     local lines = { }
     -- Resolve obj to an appropriate direction
     if object == "" then return { "Go where?" } end
-    local dir = entities[object]
+    local dir = entities[object.direct]
     if dir == nil then return { "I don't recognise that direction." } end
     local roomExits = world:rooms()[state.roomID].exits
     if roomExits[dir] == nil then return { "There is no exit to the " .. dir .. "." } end
