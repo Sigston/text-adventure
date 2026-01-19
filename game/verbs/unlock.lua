@@ -11,7 +11,7 @@ end
 
 local function act(entities, object, world, state)
     local lines = { }
-    if object == "" then return { lines = { "Unlock what?" }, quit = false } end
+    if object == "" then return { "Unlock what?" } end
     local key = world:resolveAlias(object.direct, state, entities)
     if key then
         local entity = world.entities[key]
