@@ -27,24 +27,32 @@ local function act(entities, object, world, state)
 
     -- Check direct - has to be in the inventory
     local direct, dResult = world:resolveAlias(object.direct, state, Inventory.list(state))
-    local indirect, iResult = world:resolveAlias(object.indirect, state, entities)
     if not direct then
         if dResult == "not_found" then return { "You have no " .. world:getName(direct):lower() .. "."}
-        elseif dResult == "disambig" then return { dResult }
+        elseif dResult == "disambig" then
+            state.pending.slot = "directObj"
+            state.pending.prep = object.prep
+            state.pending.indirect = object.indirect
+            return { dResult }
         else return end
     end
+    local indirect, iResult = world:resolveAlias(object.indirect, state, entities)
     if not indirect then
         if iResult == "not_found" then return { "There is no " .. world:getName(indirect):lower() .. " here."}
-        elseif iResult == "disambig" then return { iResult }
+        elseif iResult == "disambig" then 
+            state.pending.slot = "indirectObj"
+            state.pending.prep = object.prep
+            state.pending.direct = object.direct
+            return { iResult }
         else return end
     end
     if world.entities[indirect].isContainer then
         if state.open[indirect] then
             if doPut(direct, indirect, object.prep, state) == "success" then
-                table.insert(lines, "You put the " .. object.direct .. " " .. object.prep .. " the " .. object.indirect .. ".")
+                table.insert(lines, "You put the " .. world:getName(direct):lower() .. " " .. object.prep .. " the " .. world:getName(indirect):lower() .. ".")
             else table.insert(lines, "Something went wrong.") end
-        else table.insert(lines, "The " .. object.indirect .. " is not open.") end
-    else table.insert(lines, "You can't put anything " .. object.prep .. " the " .. object.indirect .. ".") end
+        else table.insert(lines, "The " .. world:getName(indirect):lower() .. " is not open.") end
+    else table.insert(lines, "You can't put anything " .. object.prep .. " the " .. world:getName(indirect):lower() .. ".") end
     return lines
 end
 

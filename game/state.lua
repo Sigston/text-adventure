@@ -28,13 +28,11 @@ function M.new(world, startRoomID)
 
     Inventory.rebuild(state)
 
-    function state:setPending(kind, slot, candidates, source, verb)
+    function state:setPending(kind, candidates, source)
         local result = {
             kind = kind,
-            slot = slot,
             candidates = candidates,
             source = source,
-            verb = verb,
         }
         state.pending = result
     end

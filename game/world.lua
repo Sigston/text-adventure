@@ -60,7 +60,7 @@ function M.new()
             for i = 1, #matchList do
                 returnList[i] = { id = matchList[i] }
             end
-            state:setPending("disambig", "directObject", returnList, alias)
+            state:setPending("disambig", returnList, alias)
             return nil, "disambig"
         end
     end

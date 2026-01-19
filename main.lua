@@ -65,9 +65,12 @@ function love.keypressed(key)
             -- If the user's input means disambig is successful, then the flag is set,
             -- and the result is a workable payload for handle. Otherwise, result will be
             -- further options for the user.
+
+            -- THIS DOESN'T HANDLE IOs
             if state.pending.kind == "disambig" then
                 result = Commands.disambig(payload, world, state)
-                if result.status == "ok" then result = Commands.handle(result.lines[1], world, state)
+                if result.status == "ok" then 
+                    result = Commands.handle(result.lines[1], world, state)
                 elseif result.status == "quitting_disambig" then result.lines = { "Nevermind..." } end
             end
         end

@@ -1,4 +1,9 @@
 return {
+    -- NOTE: if an item has the same ID as its alias, it will always be resolved if that word
+    -- is at issue: two bags, one called "bag" the other "big_bag" and both with the alias "bag"
+    -- will always result in the "bag" being selected, as we check for use of the ID first before
+    -- looking at aliases - this is to ensure that the disambiguation system is allowed to call
+    -- the verb handling system with the ID to have a final say, as it were.
     note = {
         kind = "item",
         name = "Note",
@@ -17,7 +22,7 @@ return {
         portable = true,
         isListed = true,
         icon = "key",
-        startsIn = "bag"
+        startsIn = "small_bag"
     },
     iron_key = {
         kind = "item",
@@ -27,7 +32,7 @@ return {
         portable = true,
         isListed = true,
         icon = "key",
-        startsIn = "bag"
+        startsIn = "big_bag"
     },
     inv = {
         kind = "item",
@@ -53,11 +58,11 @@ return {
         startsLocked = true,
         startsIn = "cell",
     },
-    bag = {
+    small_bag = {
         kind = "item",
-        name = "Bag",
+        name = "Small Bag",
         desc = "A hessian bag.",
-        aliases = { "bag", "sack" },
+        aliases = { "bag", "sack", "small bag" },
         isContainer = true,
         openable = true,
         lockable = false,
@@ -65,5 +70,18 @@ return {
         isListed = true,
         icon = "bag",
         startsIn = "cell"
-    }
+    },
+    big_bag = {
+        kind = "item",
+        name = "Big Bag",
+        desc = "A big hessian bag.",
+        aliases = { "big bag", "bag", "sack" },
+        isContainer = true,
+        openable = true,
+        lockable = false,
+        portable = false,
+        isListed = true,
+        icon = "bag",
+        startsIn = "cell"
+    },
 }

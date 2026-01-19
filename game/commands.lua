@@ -22,6 +22,25 @@ local function doVerb(verb, object, world, state)
     end
 end
 
+local function buildResponse(state, candidateNo)
+    local verb = state.pending.verb
+    local direct = ""
+    if not state.pending.slot or state.pending.slot == "directObj" then
+        direct = state.pending.candidates[candidateNo].id
+    else
+        direct = state.pending.direct
+    end
+    local prep = state.pending.prep
+    local indirect = ""
+    if state.pending.slot == "indirectObj" then
+        indirect = state.pending.candidates[candidateNo].indirect
+    else
+        indirect = state.pending.indirect
+    end
+
+    return { status = "ok", lines = { verb .. " " .. direct .. " " .. (prep or "") .. " " .. (indirect or "")}, quit = false }
+end
+
 function M.disambig(line, world, state)
     local tokens = Tokenizer.tokenize(line)
     if tokens then
@@ -35,7 +54,7 @@ function M.disambig(line, world, state)
         if i then
             for index, _ in ipairs(state.pending.candidates) do
                 if index == i then
-                    local out = { status = "ok", lines = { state.pending.verb .. " " .. state.pending.candidates[i].id }, quit = false }
+                    local out = buildResponse(state, i)
                     state.pending = nil
                     return  out
                 end
