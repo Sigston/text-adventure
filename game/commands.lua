@@ -12,7 +12,7 @@ local function doVerb(verb, object, world, state)
     local lines = { }
     local quit = false
 
-    if verb == "" then return { lines = { "I don't understand that." }, quit = quit } end
+    if verb == "" then return { status = "ok", lines = { "I don't understand that." }, quit = quit } end
     if verbList[verb].resolve then entities = verbList[verb].resolve(world, state) end
     if verbList[verb].act then response = verbList[verb].act(entities or {}, object or "", world, state, verbList) end
     if response[1] == "disambig" then state.pending.verb = verb; return { status = response[1] }
@@ -33,7 +33,7 @@ local function buildResponse(state, candidateNo)
     local prep = state.pending.prep
     local indirect = ""
     if state.pending.slot == "indirectObj" then
-        indirect = state.pending.candidates[candidateNo].indirect
+        indirect = state.pending.candidates[candidateNo].id
     else
         indirect = state.pending.indirect
     end
@@ -67,12 +67,13 @@ end
 function M.handle(line, world, state)
     -- Normalize and tokenize
     local tokens = Tokenizer.tokenize(line)
+    if not tokens then return { status = "ok", lines = { "You're not saying anything." }, quit = false } end
     local parsedTokens = Parser.parse(tokens, Verb)
-    if not parsedTokens then return { lines = { "What?" }, quit = false } end
+    if not parsedTokens then return { status = "ok", lines = { "I don't understand." }, quit = false } end
     -- Short circuit verb processing if the game is done
     if state.flags.won then
         if parsedTokens.verb == "quit" then return doVerb(parsedTokens.verb, parsedTokens.objects or "", world, state) end
-        return { lines = { "It's over. Type 'quit'."}, quit = false }
+        return { status = "ok", lines = { "It's over. Type 'quit'."}, quit = false }
     end
     return doVerb(parsedTokens.verb or "", parsedTokens.objects or "", world, state)
 end

@@ -13,12 +13,12 @@ local function act(entities, object, world, state)
     if object == "" then return { "Open what?" } end
     local direct, result = world:resolveAlias(object.direct, state, entities)
     if not direct then
-        if result == "not_found" then return { "There is no " .. world:getName(direct):lower() .. " here."}
+        if result == "not_found" then return { "There is no " .. object.direct .. " here."}
         elseif result == "disambig" then return { result }
         else return end
     end
     local entity = world.entities[direct]
-    if not entity.openable then return { "you can't open that." } end
+    if not entity.openable then return { "You can't open that." } end
     if state.open[direct] then return { "The " .. world:getName(direct):lower() .. " is already open." } end
     -- Allow implied unlocking of containers/doors when opening attempted.
     if state.locked[direct] then

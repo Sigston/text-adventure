@@ -28,7 +28,7 @@ local function act(entities, object, world, state)
     -- Check direct - has to be in the inventory
     local direct, dResult = world:resolveAlias(object.direct, state, Inventory.list(state))
     if not direct then
-        if dResult == "not_found" then return { "You have no " .. world:getName(direct):lower() .. "."}
+        if dResult == "not_found" then return { "You have no " .. object.direct .. "."}
         elseif dResult == "disambig" then
             state.pending.slot = "directObj"
             state.pending.prep = object.prep
@@ -38,7 +38,7 @@ local function act(entities, object, world, state)
     end
     local indirect, iResult = world:resolveAlias(object.indirect, state, entities)
     if not indirect then
-        if iResult == "not_found" then return { "There is no " .. world:getName(indirect):lower() .. " here."}
+        if iResult == "not_found" then return { "There is no " .. object.indirect .. " here."}
         elseif iResult == "disambig" then 
             state.pending.slot = "indirectObj"
             state.pending.prep = object.prep

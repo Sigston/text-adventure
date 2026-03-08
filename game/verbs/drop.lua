@@ -13,7 +13,7 @@ local function act(entities, object, world, state)
     if object == "" then return { "Drop what?" } end
     local direct, result = world:resolveAlias(object.direct, state, entities)
     if not direct then
-        if result == "not_found" then return { "You have no " .. world:getName(direct):lower() .. " to drop."}
+        if result == "not_found" then return { "You have no " .. object.direct .. " to drop."}
         elseif result == "disambig" then return { result }
         else return end
     end

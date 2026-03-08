@@ -46,6 +46,7 @@ function M.new()
         for _, value in pairs(entities) do
             if value == alias then return alias, "found" end
         end
+        -- BUG HERE - world.entities can be passed to ipairs, and it is a keyed table
         for i, _ in ipairs(entities) do
             local entity = world.entities[entities[i]]
             for _, value in ipairs(entity.aliases) do
