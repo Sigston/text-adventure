@@ -6,7 +6,7 @@ function M.new(world, startRoomID)
     startRoomID = startRoomID or "cell"
     local state = {
         roomID = startRoomID,
-        winRoomID = "gate",
+        winRoomID = "courtyard",
         visited = { },
         revealMap = false,
         invID = "inv",

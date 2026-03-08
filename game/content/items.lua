@@ -4,15 +4,18 @@ return {
     -- will always result in the "bag" being selected, as we check for use of the ID first before
     -- looking at aliases - this is to ensure that the disambiguation system is allowed to call
     -- the verb handling system with the ID to have a final say, as it were.
-    note = {
+    small_bag = {
         kind = "item",
-        name = "Note",
-        desc = "A crumpled note: 'DON'T TRUST THE DOOR.'",
-        aliases = { "note", "paper" },
-        portable = true,
+        name = "Small Bag",
+        desc = "A hessian bag.",
+        aliases = { "bag", "sack", "small bag", "hessian bag", "hessian sack" },
+        isContainer = true,
+        openable = true,
+        lockable = false,
+        portable = false,
         isListed = true,
-        icon = "note",
-        startsIn = "chest_cell"
+        icon = "bag",
+        startsIn = "cell"
     },
     brass_key = {
         kind = "item",
@@ -23,24 +26,6 @@ return {
         isListed = true,
         icon = "key",
         startsIn = "small_bag"
-    },
-    iron_key = {
-        kind = "item",
-        name = "Iron Key",
-        desc = "A worn iron key.",
-        aliases = { "key", "iron key" },
-        portable = true,
-        isListed = true,
-        icon = "key",
-        startsIn = "big_bag"
-    },
-    inv = {
-        kind = "item",
-        name = "Inventory",
-        desc = "Your pockets, such as they are.",
-        isContainer = true,
-        isListed = false,
-        startsIn = "player"
     },
     chest_cell = {
         kind = "item",
@@ -58,18 +43,15 @@ return {
         startsLocked = true,
         startsIn = "cell",
     },
-    small_bag = {
+    note = {
         kind = "item",
-        name = "Small Bag",
-        desc = "A hessian bag.",
-        aliases = { "bag", "sack", "small bag" },
-        isContainer = true,
-        openable = true,
-        lockable = false,
-        portable = false,
+        name = "Note",
+        desc = "A crumpled note: 'He leaves the gate key on his desk.'",
+        aliases = { "note", "paper" },
+        portable = true,
         isListed = true,
-        icon = "bag",
-        startsIn = "cell"
+        icon = "note",
+        startsIn = "chest_cell"
     },
     big_bag = {
         kind = "item",
@@ -83,5 +65,44 @@ return {
         isListed = true,
         icon = "bag",
         startsIn = "cell"
+    },
+    iron_key = {
+        kind = "item",
+        name = "Iron Key",
+        desc = "A worn iron key.",
+        aliases = { "key", "iron key" },
+        portable = true,
+        isListed = true,
+        icon = "key",
+        startsIn = "big_bag"
+    },
+    guard_desk = {
+        kind = "item",
+        name = "Guard's Desk",
+        aliases = { "desk", "guard's desk", "guard desk" },
+        desc = "A guard's desk, covered in papers.",
+        startsIn = "corridor",
+        isPortable = false,
+        isListed = true,
+        isContainer = true,
+        openable = true
+    },
+    exit_key = {
+        kind = "item",
+        name = "Gate Key",
+        desc = "A heavy key. Stamped: GATE.",
+        aliases = { "key", "gate key", "exit key" },
+        portable = true,
+        isListed = true,
+        icon = "key",
+        startsIn = "guard_desk"
+    },
+    inv = {
+        kind = "item",
+        name = "Inventory",
+        desc = "Your pockets, such as they are.",
+        isContainer = true,
+        isListed = false,
+        startsIn = "player"
     },
 }

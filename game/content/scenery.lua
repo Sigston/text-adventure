@@ -14,5 +14,5 @@ return {
         loc = "cell",
         isPortable = false,
         isListed = false,
-    }
-} 
+    },
+}
