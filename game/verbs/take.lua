@@ -36,8 +36,4 @@ local function act(entities, object, world, state)
     else return { "Something went wrong." } end
 end
 
-local function report(response)
-    return response, false
-end
-
-return { resolve = resolve, act = act, report = report, doVerb = doTake }
+return { resolve = resolve, act = act, doVerb = doTake }

@@ -1,4 +1,4 @@
-local function report()
+local function act(entities, object, world, state, verbs)
     local lines = {
         "Possible commands:",
         "   quit",
@@ -6,7 +6,8 @@ local function report()
         "   look",
         "   help"
     }
-    return lines, false
+
+    return lines
 end
 
-return { report = report }
+return { act = act }

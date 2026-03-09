@@ -22,7 +22,7 @@ local function act(entities, object, world, state, verbs)
         else
             doGo(roomExits[dir].to, state)
             table.insert(lines, "You go " .. dir .. ".")
-            local lookLines = verbs.look.report("", world, state)
+            local lookLines = verbs.look.act("", "", world, state)
             for i = 1, #lookLines do
                 table.insert(lines, lookLines[i])
             end
@@ -31,7 +31,7 @@ local function act(entities, object, world, state, verbs)
     else
         doGo(roomExits[dir].to, state)
         table.insert(lines, "You go " .. dir .. ".")
-        local lookLines = verbs.look.report("", world, state)
+        local lookLines = verbs.look.act("", "", world, state)
         for i = 1, #lookLines do
             table.insert(lines, lookLines[i])
         end
@@ -40,8 +40,4 @@ local function act(entities, object, world, state, verbs)
     return lines
 end
 
-local function report(response)
-    return response, false
-end
-
-return { resolve = resolve, act = act, report = report, doVerb = doGo }
+return { resolve = resolve, act = act, doVerb = doGo }

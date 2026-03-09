@@ -1,5 +1,5 @@
-local function report()
+local function act(entities, object, world, state, verbs)
     return { }, true
 end
 
-return { report = report }
+return { act = act }

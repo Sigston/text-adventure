@@ -9,10 +9,10 @@ local function listItems(keys, world)
     return out
 end
 
-local function report(response, world, state)
+local function act(entities, object, world, state, verbs)
     local lines = listItems(Inventory.list(state), world)
     if #lines < 1 then lines = { "There is nothing in your inventory." } end
-    return lines, false
+    return lines
 end
 
-return { report = report }
+return { act = act }

@@ -29,8 +29,4 @@ local function act(entities, object, world, state)
     return lines
 end
 
-local function report(response)
-    return response, false
-end
-
-return { resolve = resolve, act = act, report = report, doVerb = doClose }
+return { resolve = resolve, act = act, doVerb = doClose }

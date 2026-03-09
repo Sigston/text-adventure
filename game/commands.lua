@@ -9,17 +9,13 @@ local verbList = Verb.verbs
 local function doVerb(verb, object, world, state)
     local entities = { }
     local response = { }
-    local lines = { }
     local quit = false
 
     if verb == "" then return { status = "ok", lines = { "I don't understand that." }, quit = quit } end
     if verbList[verb].resolve then entities = verbList[verb].resolve(world, state) end
-    if verbList[verb].act then response = verbList[verb].act(entities or {}, object or "", world, state, verbList) end
+    if verbList[verb].act then response, quit = verbList[verb].act(entities or {}, object or "", world, state, verbList) end
     if response[1] == "disambig" then state.pending.verb = verb; return { status = response[1] }
-    else
-        if verbList[verb].report then lines, quit = verbList[verb].report(response or "", world, state) end
-        return { status = "ok", lines = lines, quit = quit }
-    end
+    else return { status = "ok", lines = response, quit = quit } end
 end
 
 local function buildResponse(state, candidateNo)
