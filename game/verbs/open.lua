@@ -10,6 +10,7 @@ local function resolve(world, state)
 end
 
 local function act(entities, object, world, state)
+    helper.resolveObject(object, entities, world, state, "Open what?", "There is no " .. object.direct .. " here.")
     if object == "" then return { "Open what?" } end
     local direct, result = world:resolveAlias(object.direct, state, entities)
     if not direct then

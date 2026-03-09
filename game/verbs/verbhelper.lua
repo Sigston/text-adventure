@@ -79,12 +79,23 @@ local function xEntities(roomKey, world, state)
     return out
 end
 
+local function resolveObject(object, entities, world, state, noObjectMsg, notFoundMsg)
+    if object == "" then return { noObjectMsg } end
+    local direct, result = world:resolveAlias(object.direct, state, entities)
+    if not direct then
+        if result == "not_found" then return { notFoundMsg }
+        elseif result == "disambig" then return { result }
+        else return end
+    end
+end
+
 local helper = {
     listedEntities = listedEntities,
     printEntities = printEntities,
     printExits = printExits,
     xEntities = xEntities,
     aLister = aLister,
+    resolveObject = resolveObject,
 }
 
 return helper
