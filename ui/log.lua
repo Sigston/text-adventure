@@ -71,9 +71,9 @@ function M.new(layout)
         end
 
         love.graphics.setFont(font)
-        layout.theme:set("bg")
+        self.layout.theme:set("bg")
         love.graphics.rectangle("fill", logRect.X, logRect.Y, logRect.W, logRect.H)
-        layout.theme:set("text")
+        self.layout.theme:set("text")
 
         for i = 0, math.min(self.capacity, #self.lines) - 1 do
             local idx = self.start + i

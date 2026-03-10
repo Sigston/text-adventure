@@ -40,13 +40,11 @@ function M.new()
     -- and an outcome string ("found", "not_found", "duplicates")
     function world:resolveAlias(alias, state, entities)
         local matchList = { }
-        entities = entities or world.entities
         -- Check if the user entered an ID rather than an alias - useful for when the handle() is
         -- triggered internally with a unique ID.
         for _, value in pairs(entities) do
             if value == alias then return alias, "found" end
         end
-        -- BUG HERE - world.entities can be passed to ipairs, and it is a keyed table
         for i, _ in ipairs(entities) do
             local entity = world.entities[entities[i]]
             for _, value in ipairs(entity.aliases) do

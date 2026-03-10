@@ -18,7 +18,7 @@ local function act(entities, object, world, state, verbs)
     if roomExits[dir] == nil then return { "There is no exit to the " .. dir .. "." } end
     local door = roomExits[dir].door
     if door then
-        if state.open[door] == false then table.insert(lines, "The door to the " .. dir .. " is closed.") 
+        if not state.open[door] then table.insert(lines, "The door to the " .. dir .. " is closed.") 
         else
             doGo(roomExits[dir].to, state)
             table.insert(lines, "You go " .. dir .. ".")

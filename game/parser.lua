@@ -88,7 +88,7 @@ end
 
 -- Removes STOP from tokens, and returns direct, indirect, and prep
 local function processObjects(tokens, prepList)
-    local tokens = tokens or { }
+    tokens = tokens or { }
     if #tokens < 1 then return end
     tokens = removeStop(tokens)
     local direct, indirect, prep = splitObjects(tokens, prepList)

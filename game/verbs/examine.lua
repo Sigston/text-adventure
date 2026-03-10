@@ -5,7 +5,7 @@ local function resolve(world, state)
     for i = 1, #entities do
         if world.entities[entities[i]].isContainer == true and state.open[entities[i]] then
             local contents = state:children(entities[i])
-            for i = 1, #contents do table.insert(entities, contents[i]) end
+            for j = 1, #contents do table.insert(entities, contents[j]) end
         end
     end
     return entities
